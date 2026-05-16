@@ -1,0 +1,105 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* 베이스 */
+    --background: 48 14% 98%;
+    --foreground: 0 0% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+    --muted: 60 5% 96%;
+    --muted-foreground: 0 0% 40%;
+    --accent: 60 5% 96%;
+    --accent-foreground: 0 0% 10%;
+    --border: 0 0% 90%;
+    --input: 0 0% 88%;
+    --ring: 0 0% 10%;
+
+    /* 액센트 - SK 레드 */
+    --primary: 350 100% 46%;
+    --primary-foreground: 0 0% 100%;
+    --primary-50: 350 100% 98%;
+    --primary-100: 350 100% 94%;
+    --primary-600: 350 100% 41%;
+    --primary-700: 350 100% 35%;
+
+    /* secondary */
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 100%;
+
+    /* 상태 */
+    --success: 140 53% 35%;
+    --success-foreground: 0 0% 100%;
+    --success-bg: 140 50% 93%;
+    --info: 210 100% 40%;
+    --info-foreground: 0 0% 100%;
+    --info-bg: 210 75% 94%;
+    --warning: 35 100% 40%;
+    --warning-bg: 48 100% 94%;
+    --destructive: 350 100% 46%;
+    --destructive-foreground: 0 0% 100%;
+    --destructive-bg: 0 100% 96%;
+
+    /* 사이드바 */
+    --sidebar-bg: 0 0% 10%;
+    --sidebar-fg: 0 0% 80%;
+    --sidebar-fg-active: 0 0% 100%;
+    --sidebar-bg-active: 0 0% 16%;
+    --sidebar-section: 0 0% 33%;
+    --sidebar-border: 0 0% 20%;
+
+    --radius: 3px;
+  }
+
+  /* 다크모드 (Phase 3+ 검토) */
+  /* .dark { ... } */
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans text-base;
+  }
+
+  /* 숫자/날짜는 자동으로 mono */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer components {
+  /* 카테고리 칩 */
+  .category-chip {
+    @apply inline-flex items-center px-3 py-1.5 rounded-full bg-card border border-border text-sm cursor-pointer transition-colors hover:bg-muted;
+  }
+  .category-chip.active {
+    @apply bg-foreground text-background border-foreground;
+  }
+
+  /* 상태 뱃지 */
+  .badge-status {
+    @apply inline-flex items-center px-2 py-0.5 rounded-sm font-mono text-xs;
+  }
+  .badge-available {
+    @apply badge-status bg-success-bg text-success;
+  }
+  .badge-active {
+    @apply badge-status bg-info-bg text-info;
+  }
+  .badge-overdue {
+    @apply badge-status bg-destructive-bg text-destructive;
+  }
+  .badge-returned {
+    @apply badge-status bg-muted text-muted-foreground;
+  }
+}
