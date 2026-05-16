@@ -42,3 +42,6 @@ next-env.d.ts
 # Supabase CLI local state
 supabase/.branches
 supabase/.temp
+
+# Local data files (xlsx imports, dumps)
+/data/
