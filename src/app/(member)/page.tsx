@@ -5,68 +5,123 @@ import {
 } from "@/lib/policies";
 import { BookCard } from "@/components/member/BookCard";
 import { CategoryTabs } from "@/components/member/CategoryTabs";
+import { BookSortFilter } from "@/components/member/BookSortFilter";
+import { BookPagination } from "@/components/member/BookPagination";
+
+const PAGE_SIZE = 12; // PC 1920x1080 기준 6 cols × 2 rows
 
 function isCategory(v: string | undefined): v is BookCategory {
   return !!v && (BOOK_CATEGORIES as readonly string[]).includes(v);
 }
 
+type Sort = "title" | "author";
+function isSort(v: string | undefined): v is Sort {
+  return v === "title" || v === "author";
+}
+
+type Dir = "asc" | "desc";
+function isDir(v: string | undefined): v is Dir {
+  return v === "asc" || v === "desc";
+}
+
+function buildHref(
+  page: number,
+  base: { category?: string; sort?: string; dir?: string },
+): string {
+  const params = new URLSearchParams();
+  if (base.category) params.set("category", base.category);
+  if (base.sort && base.sort !== "title") params.set("sort", base.sort);
+  if (base.dir && base.dir !== "asc") params.set("dir", base.dir);
+  if (page > 1) params.set("page", String(page));
+  const qs = params.toString();
+  return qs ? `?${qs}` : "?";
+}
+
 export default async function MemberHomePage({
   searchParams,
 }: {
-  searchParams: { category?: string };
+  searchParams: {
+    category?: string;
+    sort?: string;
+    dir?: string;
+    page?: string;
+  };
 }) {
   const supabase = createClient();
   const category = isCategory(searchParams.category)
     ? searchParams.category
     : undefined;
+  const sort: Sort = isSort(searchParams.sort) ? searchParams.sort : "title";
+  const dir: Dir = isDir(searchParams.dir) ? searchParams.dir : "asc";
+  const requestedPage = Math.max(1, Number(searchParams.page) || 1);
 
   let query = supabase
     .from("books")
-    .select("*")
+    .select("*", { count: "exact" })
     .eq("status", "active")
-    .order("created_at", { ascending: false });
+    .order(sort, { ascending: dir === "asc" });
 
-  if (category) {
-    query = query.eq("category", category);
-  }
+  if (category) query = query.eq("category", category);
 
-  const { data: books, error } = await query;
+  const offset = (requestedPage - 1) * PAGE_SIZE;
+  const { data: books, count, error } = await query.range(
+    offset,
+    offset + PAGE_SIZE - 1,
+  );
+
+  const totalPages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE));
+  const currentPage = Math.min(requestedPage, totalPages);
+  const prevHref = buildHref(Math.max(1, currentPage - 1), {
+    category,
+    sort,
+    dir,
+  });
+  const nextHref = buildHref(Math.min(totalPages, currentPage + 1), {
+    category,
+    sort,
+    dir,
+  });
 
   return (
-    <div className="space-y-6">
-      <header className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">도서 조회</h1>
-        <p className="text-md text-muted-foreground">
-          사내 비치 도서를 카테고리별로 둘러보세요
+    <div className="space-y-3">
+      <header className="space-y-1">
+        <h1 className="text-2xl font-bold tracking-tight">도서 조회</h1>
+        <p className="text-xs text-muted-foreground">
+          총 <span className="font-mono font-medium text-foreground">{count ?? 0}</span>권
         </p>
       </header>
 
       <CategoryTabs current={category} />
 
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <BookSortFilter current={sort} dir={dir} />
+        <BookPagination
+          current={currentPage}
+          total={totalPages}
+          prevHref={prevHref}
+          nextHref={nextHref}
+        />
+      </div>
+
       {error ? (
-        <div className="p-8 text-center bg-destructive-bg text-destructive rounded-md">
-          도서를 불러오는 중 오류가 발생했습니다: {error.message}
+        <div className="p-6 bg-destructive-bg text-destructive rounded-md">
+          오류: {error.message}
         </div>
       ) : !books || books.length === 0 ? (
-        <div className="p-12 text-center bg-muted rounded-md space-y-2">
+        <div className="p-10 text-center bg-muted rounded-md space-y-2">
           <div className="text-2xl">📚</div>
-          <div className="text-md text-muted-foreground">
+          <div className="text-sm text-muted-foreground">
             {category
               ? `'${category}' 카테고리에 등록된 도서가 없습니다.`
               : "아직 등록된 도서가 없습니다."}
           </div>
         </div>
       ) : (
-        <>
-          <div className="text-sm text-muted-foreground">
-            총 <span className="font-mono font-medium text-foreground">{books.length}</span>권
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-            {books.map((book) => (
-              <BookCard key={book.id} book={book} />
-            ))}
-          </div>
-        </>
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+          {books.map((book) => (
+            <BookCard key={book.id} book={book} />
+          ))}
+        </div>
       )}
     </div>
   );
