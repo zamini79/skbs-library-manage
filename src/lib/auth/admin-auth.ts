@@ -1,0 +1,110 @@
+// 관리자 인증 헬퍼 — JWT (jose) + httpOnly 쿠키
+// 구성원 인증(Supabase Auth)과 별도. service_role로 admins 테이블 직접 조회.
+//
+// - signAdminToken/verifyAdminToken: jose 기반 (Edge runtime 호환)
+// - getAdminFromCookie: 서버 컴포넌트/API에서 호출
+// - requireAny/requireMaster: 페이지 가드 (인증 안 됐으면 redirect)
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { SignJWT, jwtVerify, type JWTPayload } from "jose";
+import type { Database } from "@/types/database.types";
+import { ADMIN_ROLES, type AdminRole } from "@/lib/policies";
+
+export const ADMIN_COOKIE_NAME = "admin_session";
+const TOKEN_MAX_AGE_SEC = 60 * 60 * 8; // 8시간
+
+export type AdminTokenPayload = {
+  adminId: string;
+  loginId: string;
+  role: AdminRole;
+  name: string;
+};
+
+type AdminRow = Database["public"]["Tables"]["admins"]["Row"];
+
+function getSecret(): Uint8Array {
+  const secret = process.env.ADMIN_JWT_SECRET;
+  if (!secret) {
+    throw new Error("ADMIN_JWT_SECRET env var not set");
+  }
+  return new TextEncoder().encode(secret);
+}
+
+function isAdminRole(v: unknown): v is AdminRole {
+  return typeof v === "string" && (ADMIN_ROLES as readonly string[]).includes(v);
+}
+
+export async function signAdminToken(
+  payload: AdminTokenPayload,
+): Promise<string> {
+  return new SignJWT(payload as unknown as JWTPayload)
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setExpirationTime(`${TOKEN_MAX_AGE_SEC}s`)
+    .sign(getSecret());
+}
+
+export async function verifyAdminToken(
+  token: string,
+): Promise<AdminTokenPayload | null> {
+  try {
+    const { payload } = await jwtVerify(token, getSecret());
+    if (
+      typeof payload.adminId === "string" &&
+      typeof payload.loginId === "string" &&
+      typeof payload.name === "string" &&
+      isAdminRole(payload.role)
+    ) {
+      return {
+        adminId: payload.adminId,
+        loginId: payload.loginId,
+        role: payload.role,
+        name: payload.name,
+      };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+export async function setAdminCookie(token: string) {
+  cookies().set(ADMIN_COOKIE_NAME, token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: TOKEN_MAX_AGE_SEC,
+  });
+}
+
+export async function clearAdminCookie() {
+  cookies().delete(ADMIN_COOKIE_NAME);
+}
+
+export async function getAdminFromCookie(): Promise<AdminTokenPayload | null> {
+  const token = cookies().get(ADMIN_COOKIE_NAME)?.value;
+  if (!token) return null;
+  return verifyAdminToken(token);
+}
+
+/** master/book 둘 다 허용. 인증 안 됐으면 /admin/login으로 리디렉트. */
+export async function requireAny(): Promise<AdminTokenPayload> {
+  const admin = await getAdminFromCookie();
+  if (!admin) redirect("/admin/login");
+  return admin;
+}
+
+/** master 권한만 허용. book이면 dashboard로 리디렉트, 미인증이면 login으로. */
+export async function requireMaster(): Promise<AdminTokenPayload> {
+  const admin = await getAdminFromCookie();
+  if (!admin) redirect("/admin/login");
+  if (admin.role !== "master") redirect("/admin/dashboard");
+  return admin;
+}
+
+export function adminRoleLabel(role: AdminRole): string {
+  return role === "master" ? "마스터 관리자" : "대여 관리자";
+}
+
+export type { AdminRow };
