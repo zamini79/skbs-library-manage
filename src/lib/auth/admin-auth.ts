@@ -107,4 +107,43 @@ export function adminRoleLabel(role: AdminRole): string {
   return role === "master" ? "마스터 관리자" : "대여 관리자";
 }
 
+/**
+ * API 라우트에서 마스터 권한 요구. AdminTokenPayload | NextResponse 반환.
+ * NextResponse면 그대로 return 해서 401/403 응답.
+ */
+export async function getMasterOrError(): Promise<
+  AdminTokenPayload | import("next/server").NextResponse
+> {
+  const { NextResponse } = await import("next/server");
+  const admin = await getAdminFromCookie();
+  if (!admin) {
+    return NextResponse.json(
+      { ok: false, error: "UNAUTHORIZED" },
+      { status: 401 },
+    );
+  }
+  if (admin.role !== "master") {
+    return NextResponse.json(
+      { ok: false, error: "FORBIDDEN" },
+      { status: 403 },
+    );
+  }
+  return admin;
+}
+
+/** API 라우트에서 master/book 둘 다 허용. */
+export async function getAnyOrError(): Promise<
+  AdminTokenPayload | import("next/server").NextResponse
+> {
+  const { NextResponse } = await import("next/server");
+  const admin = await getAdminFromCookie();
+  if (!admin) {
+    return NextResponse.json(
+      { ok: false, error: "UNAUTHORIZED" },
+      { status: 401 },
+    );
+  }
+  return admin;
+}
+
 export type { AdminRow };
