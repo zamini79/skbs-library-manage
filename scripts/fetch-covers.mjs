@@ -142,10 +142,7 @@ async function fetchNaver(title, author) {
 }
 
 async function fetchCover(title, author) {
-  if (useGoogle) {
-    const r = await fetchGoogle(title, author);
-    if (r) return { url: r, source: "google" };
-  }
+  // 우선순위: Kakao → Naver → Google (한국 책 표지 해상도/정확도 기준)
   if (useKakao) {
     const r = await fetchKakao(title, author);
     if (r) return { url: r, source: "kakao" };
@@ -153,6 +150,10 @@ async function fetchCover(title, author) {
   if (useNaver) {
     const r = await fetchNaver(title, author);
     if (r) return { url: r, source: "naver" };
+  }
+  if (useGoogle) {
+    const r = await fetchGoogle(title, author);
+    if (r) return { url: r, source: "google" };
   }
   return null;
 }

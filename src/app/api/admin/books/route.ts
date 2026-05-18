@@ -57,19 +57,20 @@ export async function POST(req: Request) {
     );
   }
 
-  // 표지 자동 조회 — Google → Kakao → Naver 폴백 체인. 실패해도 등록 성공.
-  let cover = await fetchGoogleBookCover({
+  // 표지 자동 조회 — Kakao → Naver → Google 폴백 체인.
+  // 한국 책 표지는 Kakao/Naver가 해상도/정확도 우수, Google은 international fallback.
+  let cover = await fetchKakaoBookCover({
     title: b.title,
     author: b.author,
   });
-  let coverSource: "google" | "kakao" | "naver" | null = cover ? "google" : null;
-  if (!cover) {
-    cover = await fetchKakaoBookCover({ title: b.title, author: b.author });
-    if (cover) coverSource = "kakao";
-  }
+  let coverSource: "kakao" | "naver" | "google" | null = cover ? "kakao" : null;
   if (!cover) {
     cover = await fetchNaverBookCover({ title: b.title, author: b.author });
     if (cover) coverSource = "naver";
+  }
+  if (!cover) {
+    cover = await fetchGoogleBookCover({ title: b.title, author: b.author });
+    if (cover) coverSource = "google";
   }
   if (cover) {
     await supabase
