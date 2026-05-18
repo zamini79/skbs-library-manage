@@ -83,6 +83,15 @@ export default async function BookDetailPage({
           </dl>
         </div>
       </div>
+
+      {book.description && (
+        <section className="space-y-3 pt-4 border-t">
+          <h2 className="text-lg font-semibold">책 소개 및 줄거리</h2>
+          <p className="text-sm leading-relaxed whitespace-pre-line text-foreground">
+            {book.description}
+          </p>
+        </section>
+      )}
     </div>
   );
 }

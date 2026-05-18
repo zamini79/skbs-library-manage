@@ -56,9 +56,15 @@ async function fetchGoogle(title, author) {
   }
 }
 
-function upsizeKakao(url) {
+function extractKakaoOriginal(url) {
   if (!url || !url.includes("kakaocdn.net/thumb/")) return url;
-  return url.replace(/\/thumb\/R\d+x\d+(?:\.q\d+)?\//, "/thumb/R600x600.q90/");
+  const m = url.match(/[?&]fname=([^&]+)/);
+  if (!m) return url;
+  try {
+    return decodeURIComponent(m[1]).replace(/^http:\/\//, "https://");
+  } catch {
+    return url;
+  }
 }
 
 async function fetchKakao(title, author) {
@@ -81,7 +87,7 @@ async function fetchKakao(title, author) {
     const docs = data?.documents ?? [];
     if (docs.length === 0) return null;
 
-    const normalize = (u) => upsizeKakao(u.startsWith("//") ? `https:${u}` : u);
+    const normalize = (u) => extractKakaoOriginal(u.startsWith("//") ? `https:${u}` : u);
 
     const firstAuthor = (author || "").split(/[,/]/)[0].trim();
     if (firstAuthor) {

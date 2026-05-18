@@ -1,12 +1,23 @@
-// Google Books API helper — 책 표지 URL 조회 (무인증, 일 1000 limit)
-//
-// 사용처:
-//   - POST /api/admin/books 인서트 직후 자동 호출
-//   - scripts/fetch-covers.mjs 백필 (별도 구현)
-//
-// 반환: HTTPS-upgraded URL 또는 null
+// Google Books API helper
+// 무인증 quota는 0이므로 GOOGLE_BOOKS_API_KEY 필수
 
-export async function fetchGoogleBookCover({
+export type GoogleBookMetadata = {
+  cover: string | null;
+  isbn: string | null;
+  description: string | null;
+};
+
+function pickIsbn13(
+  ids: Array<{ type: string; identifier: string }> | undefined,
+): string | null {
+  if (!ids) return null;
+  const i13 = ids.find((x) => x.type === "ISBN_13");
+  if (i13) return i13.identifier;
+  const i10 = ids.find((x) => x.type === "ISBN_10");
+  return i10?.identifier ?? null;
+}
+
+export async function fetchGoogleBookMetadata({
   title,
   author,
   timeoutMs = 5000,
@@ -14,24 +25,23 @@ export async function fetchGoogleBookCover({
   title: string;
   author?: string;
   timeoutMs?: number;
-}): Promise<string | null> {
-  if (!title) return null;
+}): Promise<GoogleBookMetadata> {
+  const empty: GoogleBookMetadata = { cover: null, isbn: null, description: null };
+  if (!title) return empty;
 
-  // 다중 저자는 첫 번째만 사용 (Google Books가 부분 매칭 더 잘 함)
+  const apiKey = process.env.GOOGLE_BOOKS_API_KEY;
+  if (!apiKey) return empty;
+
   const firstAuthor = author?.split(/[,/]/)[0]?.trim() ?? "";
   const qParts = [`intitle:${title}`];
   if (firstAuthor) qParts.push(`inauthor:${firstAuthor}`);
-  const q = qParts.join("+");
 
   const params = new URLSearchParams({
-    q,
+    q: qParts.join("+"),
     maxResults: "1",
     printType: "books",
+    key: apiKey,
   });
-  // 무인증 quota는 0이라 API key 필수. 없으면 호출 자체를 스킵.
-  const apiKey = process.env.GOOGLE_BOOKS_API_KEY;
-  if (!apiKey) return null;
-  params.set("key", apiKey);
   const url = `https://www.googleapis.com/books/v1/volumes?${params}`;
 
   try {
@@ -39,7 +49,7 @@ export async function fetchGoogleBookCover({
     const timer = setTimeout(() => controller.abort(), timeoutMs);
     const res = await fetch(url, { signal: controller.signal });
     clearTimeout(timer);
-    if (!res.ok) return null;
+    if (!res.ok) return empty;
 
     const data = (await res.json()) as {
       items?: Array<{
@@ -52,25 +62,41 @@ export async function fetchGoogleBookCover({
             thumbnail?: string;
             smallThumbnail?: string;
           };
+          industryIdentifiers?: Array<{ type: string; identifier: string }>;
+          description?: string;
         };
       }>;
     };
+    const v = data.items?.[0]?.volumeInfo;
+    if (!v) return empty;
 
-    const links = data.items?.[0]?.volumeInfo?.imageLinks;
-    if (!links) return null;
+    const links = v.imageLinks;
+    const raw = links
+      ? links.medium ||
+        links.small ||
+        links.thumbnail ||
+        links.smallThumbnail ||
+        links.large ||
+        links.extraLarge
+      : null;
+    const cover = raw ? String(raw).replace(/^http:/, "https:") : null;
 
-    const raw =
-      links.medium ||
-      links.small ||
-      links.thumbnail ||
-      links.smallThumbnail ||
-      links.large ||
-      links.extraLarge;
-    if (!raw) return null;
-
-    // HTTP → HTTPS (mixed content 회피)
-    return String(raw).replace(/^http:/, "https:");
+    return {
+      cover,
+      isbn: pickIsbn13(v.industryIdentifiers),
+      description: v.description?.trim() || null,
+    };
   } catch {
-    return null;
+    return empty;
   }
+}
+
+// 하위 호환
+export async function fetchGoogleBookCover(opts: {
+  title: string;
+  author?: string;
+  timeoutMs?: number;
+}): Promise<string | null> {
+  const m = await fetchGoogleBookMetadata(opts);
+  return m.cover;
 }

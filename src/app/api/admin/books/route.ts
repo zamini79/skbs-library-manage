@@ -5,9 +5,9 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getMasterOrError } from "@/lib/auth/admin-auth";
 import { BookCreateSchema } from "@/lib/books-schema";
-import { fetchGoogleBookCover } from "@/lib/google-books";
-import { fetchKakaoBookCover } from "@/lib/kakao-books";
-import { fetchNaverBookCover } from "@/lib/naver-books";
+import { fetchGoogleBookMetadata } from "@/lib/google-books";
+import { fetchKakaoBookMetadata } from "@/lib/kakao-books";
+import { fetchNaverBookMetadata } from "@/lib/naver-books";
 
 export const runtime = "nodejs";
 
@@ -57,26 +57,43 @@ export async function POST(req: Request) {
     );
   }
 
-  // 표지 자동 조회 — Kakao → Naver → Google 폴백 체인.
-  // 한국 책 표지는 Kakao/Naver가 해상도/정확도 우수, Google은 international fallback.
-  let cover = await fetchKakaoBookCover({
-    title: b.title,
-    author: b.author,
-  });
-  let coverSource: "kakao" | "naver" | "google" | null = cover ? "kakao" : null;
-  if (!cover) {
-    cover = await fetchNaverBookCover({ title: b.title, author: b.author });
-    if (cover) coverSource = "naver";
+  // 표지·ISBN·description 자동 조회 — Kakao → Naver → Google 순차로 빈 칸 채움.
+  // - 표지: 첫 매칭 사용
+  // - ISBN: 첫 매칭이 없으면 다음 소스 시도
+  // - description: kakao 우선, 없으면 naver, 그래도 없으면 google
+  let cover: string | null = null;
+  let isbn: string | null = b.isbn;
+  let description: string | null = null;
+  let coverSource: "kakao" | "naver" | "google" | null = null;
+
+  const k = await fetchKakaoBookMetadata({ title: b.title, author: b.author });
+  if (k.cover) { cover = k.cover; coverSource = "kakao"; }
+  if (k.isbn && !isbn) isbn = k.isbn;
+  if (k.description) description = k.description;
+
+  if (!cover || !isbn || !description) {
+    const n = await fetchNaverBookMetadata({ title: b.title, author: b.author });
+    if (!cover && n.cover) { cover = n.cover; coverSource = "naver"; }
+    if (!isbn && n.isbn) isbn = n.isbn;
+    if (!description && n.description) description = n.description;
   }
-  if (!cover) {
-    cover = await fetchGoogleBookCover({ title: b.title, author: b.author });
-    if (cover) coverSource = "google";
+  if (!cover || !isbn) {
+    const g = await fetchGoogleBookMetadata({ title: b.title, author: b.author });
+    if (!cover && g.cover) { cover = g.cover; coverSource = "google"; }
+    if (!isbn && g.isbn) isbn = g.isbn;
   }
-  if (cover) {
-    await supabase
-      .from("books")
-      .update({ cover_url_external: cover })
-      .eq("id", data.id);
+
+  const updates: {
+    cover_url_external?: string;
+    isbn?: string;
+    description?: string;
+  } = {};
+  if (cover) updates.cover_url_external = cover;
+  if (isbn && isbn !== b.isbn) updates.isbn = isbn;
+  if (description) updates.description = description;
+
+  if (Object.keys(updates).length > 0) {
+    await supabase.from("books").update(updates).eq("id", data.id);
   }
 
   return NextResponse.json({

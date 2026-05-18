@@ -10,7 +10,7 @@ export function BookCard({ book }: { book: Book }) {
   return (
     <Link href={`/books/${book.id}`} className="group">
       <div className="bg-card rounded-md border overflow-hidden hover:shadow-md transition-shadow">
-        <div className="aspect-[3/4] bg-gradient-to-br from-muted to-border relative">
+        <div className="aspect-[2/3] bg-gradient-to-br from-muted to-border relative">
           {cover ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img

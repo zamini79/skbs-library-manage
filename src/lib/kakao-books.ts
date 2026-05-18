@@ -1,18 +1,35 @@
-// Kakao Book Search API helper — 한국 책 커버리지 보강용 (Google Books 폴백)
-//
+// Kakao Book Search API helper
 // API: https://developers.kakao.com/docs/latest/ko/daum-search/dev-guide
-// 한도: 30,000/일 (앱당), 썸네일 80×110
+// 한도: 30,000/일 (앱당)
 
 const KAKAO_ENDPOINT = "https://dapi.kakao.com/v3/search/book";
 
-// Kakao CDN은 정사각형 사이즈만 허용 (R200x200, R400x400, R600x600, R800x800, R1080x1080).
-// R600x600 = 약 5x 해상도 (~55KB), 카드 표시용 충분.
-function upsizeKakaoThumbnail(url: string): string {
+// Kakao thumb는 정사각형 캔버스라 책 비율 왜곡. fname 안의 daumcdn 원본 URL 추출 + HTTPS.
+function extractKakaoOriginal(url: string): string {
   if (!url || !url.includes("kakaocdn.net/thumb/")) return url;
-  return url.replace(/\/thumb\/R\d+x\d+(?:\.q\d+)?\//, "/thumb/R600x600.q90/");
+  const m = url.match(/[?&]fname=([^&]+)/);
+  if (!m) return url;
+  try {
+    return decodeURIComponent(m[1]).replace(/^http:\/\//, "https://");
+  } catch {
+    return url;
+  }
 }
 
-export async function fetchKakaoBookCover({
+// Kakao isbn 필드는 "ISBN10 ISBN13" 형태. ISBN13 우선 추출.
+function pickIsbn13(raw: string | undefined): string | null {
+  if (!raw) return null;
+  const parts = raw.split(/\s+/).filter(Boolean);
+  return parts.find((p) => p.length === 13) ?? parts[0] ?? null;
+}
+
+export type KakaoBookMetadata = {
+  cover: string | null;
+  isbn: string | null;
+  description: string | null;
+};
+
+export async function fetchKakaoBookMetadata({
   title,
   author,
   timeoutMs = 5000,
@@ -20,13 +37,13 @@ export async function fetchKakaoBookCover({
   title: string;
   author?: string;
   timeoutMs?: number;
-}): Promise<string | null> {
-  if (!title) return null;
+}): Promise<KakaoBookMetadata> {
+  const empty: KakaoBookMetadata = { cover: null, isbn: null, description: null };
+  if (!title) return empty;
 
   const apiKey = process.env.KAKAO_REST_API_KEY;
-  if (!apiKey) return null;
+  if (!apiKey) return empty;
 
-  // 제목 기반 검색 (저자명은 결과에서 필터링)
   const params = new URLSearchParams({
     query: title,
     target: "title",
@@ -41,37 +58,55 @@ export async function fetchKakaoBookCover({
       headers: { Authorization: `KakaoAK ${apiKey}` },
     });
     clearTimeout(timer);
-    if (!res.ok) return null;
+    if (!res.ok) return empty;
 
     const data = (await res.json()) as {
-      documents?: Array<{ thumbnail?: string; authors?: string[] }>;
+      documents?: Array<{
+        thumbnail?: string;
+        authors?: string[];
+        isbn?: string;
+        contents?: string;
+      }>;
     };
     const docs = data?.documents ?? [];
-    if (docs.length === 0) return null;
+    if (docs.length === 0) return empty;
 
-    const normalizeUrl = (u: string) => {
-      const https = u.startsWith("//") ? `https:${u}` : u;
-      return upsizeKakaoThumbnail(https);
-    };
-
-    // 저자명 매칭 (엄격) — 잘못된 책 표지 방지
+    // 저자 매칭 (엄격)
     const firstAuthor = author?.split(/[,/]/)[0]?.trim();
+    let pick = null;
     if (firstAuthor) {
-      const matched = docs.find((d) =>
-        d.authors?.some(
-          (a) => a.includes(firstAuthor) || firstAuthor.includes(a),
-        ),
-      );
-      const url = matched?.thumbnail;
-      if (!url) return null;
-      return normalizeUrl(url);
+      pick =
+        docs.find((d) =>
+          d.authors?.some(
+            (a) => a.includes(firstAuthor) || firstAuthor.includes(a),
+          ),
+        ) ?? null;
+    } else {
+      pick = docs[0] ?? null;
     }
 
-    // 저자 정보 없으면 첫 번째 결과 사용
-    const url = docs[0]?.thumbnail;
-    if (!url) return null;
-    return normalizeUrl(url);
+    if (!pick) return empty;
+    const cover = pick.thumbnail
+      ? extractKakaoOriginal(
+          pick.thumbnail.startsWith("//") ? `https:${pick.thumbnail}` : pick.thumbnail,
+        )
+      : null;
+    return {
+      cover,
+      isbn: pickIsbn13(pick.isbn),
+      description: pick.contents?.trim() || null,
+    };
   } catch {
-    return null;
+    return empty;
   }
+}
+
+// 표지만 필요한 호출자를 위한 하위 호환 함수
+export async function fetchKakaoBookCover(opts: {
+  title: string;
+  author?: string;
+  timeoutMs?: number;
+}): Promise<string | null> {
+  const m = await fetchKakaoBookMetadata(opts);
+  return m.cover;
 }

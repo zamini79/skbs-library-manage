@@ -59,6 +59,7 @@ export type Database = {
           cover_url_external: string | null
           created_at: string
           created_by: string | null
+          description: string | null
           disposal_reason: Database["public"]["Enums"]["disposal_reason"] | null
           disposed_at: string | null
           id: string
@@ -78,6 +79,7 @@ export type Database = {
           cover_url_external?: string | null
           created_at?: string
           created_by?: string | null
+          description?: string | null
           disposal_reason?:
             | Database["public"]["Enums"]["disposal_reason"]
             | null
@@ -99,6 +101,7 @@ export type Database = {
           cover_url_external?: string | null
           created_at?: string
           created_by?: string | null
+          description?: string | null
           disposal_reason?:
             | Database["public"]["Enums"]["disposal_reason"]
             | null
