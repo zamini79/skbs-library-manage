@@ -56,6 +56,11 @@ async function fetchGoogle(title, author) {
   }
 }
 
+function upsizeKakao(url) {
+  if (!url || !url.includes("kakaocdn.net/thumb/")) return url;
+  return url.replace(/\/thumb\/R\d+x\d+(?:\.q\d+)?\//, "/thumb/R600x600.q90/");
+}
+
 async function fetchKakao(title, author) {
   if (!process.env.KAKAO_REST_API_KEY) return null;
   const params = new URLSearchParams({
@@ -76,6 +81,8 @@ async function fetchKakao(title, author) {
     const docs = data?.documents ?? [];
     if (docs.length === 0) return null;
 
+    const normalize = (u) => upsizeKakao(u.startsWith("//") ? `https:${u}` : u);
+
     const firstAuthor = (author || "").split(/[,/]/)[0].trim();
     if (firstAuthor) {
       const matched = docs.find((d) =>
@@ -85,11 +92,11 @@ async function fetchKakao(title, author) {
       );
       const url = matched?.thumbnail;
       if (!url) return null;
-      return url.startsWith("//") ? `https:${url}` : url;
+      return normalize(url);
     }
     const url = docs[0]?.thumbnail;
     if (!url) return null;
-    return url.startsWith("//") ? `https:${url}` : url;
+    return normalize(url);
   } catch {
     return null;
   }

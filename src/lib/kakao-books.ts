@@ -5,6 +5,13 @@
 
 const KAKAO_ENDPOINT = "https://dapi.kakao.com/v3/search/book";
 
+// Kakao CDN은 정사각형 사이즈만 허용 (R200x200, R400x400, R600x600, R800x800, R1080x1080).
+// R600x600 = 약 5x 해상도 (~55KB), 카드 표시용 충분.
+function upsizeKakaoThumbnail(url: string): string {
+  if (!url || !url.includes("kakaocdn.net/thumb/")) return url;
+  return url.replace(/\/thumb\/R\d+x\d+(?:\.q\d+)?\//, "/thumb/R600x600.q90/");
+}
+
 export async function fetchKakaoBookCover({
   title,
   author,
@@ -42,6 +49,11 @@ export async function fetchKakaoBookCover({
     const docs = data?.documents ?? [];
     if (docs.length === 0) return null;
 
+    const normalizeUrl = (u: string) => {
+      const https = u.startsWith("//") ? `https:${u}` : u;
+      return upsizeKakaoThumbnail(https);
+    };
+
     // 저자명 매칭 (엄격) — 잘못된 책 표지 방지
     const firstAuthor = author?.split(/[,/]/)[0]?.trim();
     if (firstAuthor) {
@@ -52,13 +64,13 @@ export async function fetchKakaoBookCover({
       );
       const url = matched?.thumbnail;
       if (!url) return null;
-      return url.startsWith("//") ? `https:${url}` : url;
+      return normalizeUrl(url);
     }
 
     // 저자 정보 없으면 첫 번째 결과 사용
     const url = docs[0]?.thumbnail;
     if (!url) return null;
-    return url.startsWith("//") ? `https:${url}` : url;
+    return normalizeUrl(url);
   } catch {
     return null;
   }
