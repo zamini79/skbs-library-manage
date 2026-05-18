@@ -6,6 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getMasterOrError } from "@/lib/auth/admin-auth";
 import { BookCreateSchema } from "@/lib/books-schema";
 import { fetchGoogleBookCover } from "@/lib/google-books";
+import { fetchKakaoBookCover } from "@/lib/kakao-books";
 
 export const runtime = "nodejs";
 
@@ -55,11 +56,16 @@ export async function POST(req: Request) {
     );
   }
 
-  // 표지 자동 조회 (Google Books) — 실패해도 등록 성공으로 처리
-  const cover = await fetchGoogleBookCover({
+  // 표지 자동 조회 — Google Books → Kakao 폴백. 실패해도 등록 성공.
+  let cover = await fetchGoogleBookCover({
     title: b.title,
     author: b.author,
   });
+  let coverSource: "google" | "kakao" | null = cover ? "google" : null;
+  if (!cover) {
+    cover = await fetchKakaoBookCover({ title: b.title, author: b.author });
+    if (cover) coverSource = "kakao";
+  }
   if (cover) {
     await supabase
       .from("books")
@@ -71,5 +77,6 @@ export async function POST(req: Request) {
     ok: true,
     id: data.id,
     cover_fetched: cover !== null,
+    cover_source: coverSource,
   });
 }
