@@ -71,16 +71,7 @@ export default async function MemberHomePage({
 
   const totalPages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE));
   const currentPage = Math.min(requestedPage, totalPages);
-  const prevHref = buildHref(Math.max(1, currentPage - 1), {
-    category,
-    sort,
-    dir,
-  });
-  const nextHref = buildHref(Math.min(totalPages, currentPage + 1), {
-    category,
-    sort,
-    dir,
-  });
+  const baseParams = { category, sort, dir };
 
   return (
     <div className="space-y-3">
@@ -88,19 +79,17 @@ export default async function MemberHomePage({
         <h1 className="text-2xl font-bold tracking-tight">도서 조회</h1>
         <p className="text-xs text-muted-foreground">
           총 <span className="font-mono font-medium text-foreground">{count ?? 0}</span>권
+          · 페이지{" "}
+          <span className="font-mono tabular">
+            {currentPage} / {totalPages}
+          </span>
         </p>
       </header>
 
       <CategoryTabs current={category} />
 
-      <div className="flex items-center justify-between gap-3 flex-wrap">
+      <div className="flex items-center justify-start">
         <BookSortFilter current={sort} dir={dir} />
-        <BookPagination
-          current={currentPage}
-          total={totalPages}
-          prevHref={prevHref}
-          nextHref={nextHref}
-        />
       </div>
 
       {error ? (
@@ -117,11 +106,20 @@ export default async function MemberHomePage({
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-2">
-          {books.map((book) => (
-            <BookCard key={book.id} book={book} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-2">
+            {books.map((book) => (
+              <BookCard key={book.id} book={book} />
+            ))}
+          </div>
+          <div className="pt-2">
+            <BookPagination
+              current={currentPage}
+              total={totalPages}
+              baseParams={baseParams}
+            />
+          </div>
+        </>
       )}
     </div>
   );

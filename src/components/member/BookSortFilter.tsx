@@ -25,7 +25,9 @@ export function BookSortFilter({
     if (v && v !== "title") params.set("sort", v);
     else params.delete("sort");
     params.delete("page");
-    router.replace(`?${params.toString()}`);
+    const qs = params.toString();
+    router.replace(qs ? `/?${qs}` : "/");
+    router.refresh();
   }
 
   function toggleDir() {
@@ -34,7 +36,9 @@ export function BookSortFilter({
     if (next === "desc") params.set("dir", "desc");
     else params.delete("dir");
     params.delete("page");
-    router.replace(`?${params.toString()}`);
+    const qs = params.toString();
+    router.replace(qs ? `/?${qs}` : "/");
+    router.refresh();
   }
 
   return (
