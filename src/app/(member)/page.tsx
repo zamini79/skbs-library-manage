@@ -24,19 +24,6 @@ function isDir(v: string | undefined): v is Dir {
   return v === "asc" || v === "desc";
 }
 
-function buildHref(
-  page: number,
-  base: { category?: string; sort?: string; dir?: string },
-): string {
-  const params = new URLSearchParams();
-  if (base.category) params.set("category", base.category);
-  if (base.sort && base.sort !== "title") params.set("sort", base.sort);
-  if (base.dir && base.dir !== "asc") params.set("dir", base.dir);
-  if (page > 1) params.set("page", String(page));
-  const qs = params.toString();
-  return qs ? `?${qs}` : "?";
-}
-
 export default async function MemberHomePage({
   searchParams,
 }: {
