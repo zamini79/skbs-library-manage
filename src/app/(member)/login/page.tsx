@@ -107,6 +107,12 @@ export default function MemberLoginPage() {
             회원가입
           </Link>
         </p>
+        <p className="text-xs text-muted-foreground text-center">
+          관리자이신가요?{" "}
+          <Link href="/admin/login" className="text-primary hover:underline">
+            관리자 로그인
+          </Link>
+        </p>
       </div>
     </div>
   );

@@ -60,7 +60,6 @@ function LoginForm() {
           required
           value={loginId}
           onChange={(e) => setLoginId(e.target.value)}
-          placeholder="cs_admin / book_admin"
           disabled={loading}
         />
       </div>
