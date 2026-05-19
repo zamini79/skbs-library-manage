@@ -2,13 +2,14 @@
 // 사용 흐름: 회원가입(Step 1) → 이메일 매직 링크 → 여기로 진입 → /signup/complete (Step 3)
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { safeRedirect } from "@/lib/safe-redirect";
 
 export const runtime = "nodejs";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") || "/signup/complete";
+  const next = safeRedirect(searchParams.get("next"), "/signup/complete");
 
   if (code) {
     const supabase = createClient();
