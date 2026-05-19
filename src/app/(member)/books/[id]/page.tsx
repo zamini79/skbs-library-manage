@@ -3,11 +3,18 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { BookStatusBadge } from "@/components/member/BookStatusBadge";
 
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export default async function BookDetailPage({
   params,
 }: {
   params: { id: string };
 }) {
+  if (!UUID_RE.test(params.id)) {
+    notFound();
+  }
+
   const supabase = createClient();
 
   const { data: book, error } = await supabase

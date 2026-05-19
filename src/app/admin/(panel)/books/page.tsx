@@ -6,6 +6,7 @@ import {
   BOOK_CATEGORIES,
   type BookCategory,
 } from "@/lib/policies";
+import { safeIlike } from "@/lib/safe-ilike";
 import { Button } from "@/components/ui/button";
 import { BookFilters } from "@/components/admin/BookFilters";
 import { BooksTable } from "@/components/admin/BooksTable";
@@ -19,11 +20,6 @@ function isCategory(v: string | undefined): v is BookCategory {
 type Status = "available" | "rented" | "disposed";
 function isStatus(v: string | undefined): v is Status {
   return v === "available" || v === "rented" || v === "disposed";
-}
-
-function sanitize(s: string): string {
-  // PostgREST or() 구분자 문자 제거
-  return s.replace(/[,()]/g, "");
 }
 
 export default async function AdminBooksPage({
@@ -45,10 +41,12 @@ export default async function AdminBooksPage({
     .select("*", { count: "exact" });
 
   if (q) {
-    const safe = sanitize(q);
-    query = query.or(
-      `title.ilike.%${safe}%,author.ilike.%${safe}%,publisher.ilike.%${safe}%`,
-    );
+    const safe = safeIlike(q);
+    if (safe) {
+      query = query.or(
+        `title.ilike.%${safe}%,author.ilike.%${safe}%,publisher.ilike.%${safe}%`,
+      );
+    }
   }
   if (category) {
     query = query.eq("category", category);

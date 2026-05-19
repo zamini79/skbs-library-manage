@@ -9,7 +9,13 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
 const ProfileSchema = z.object({
-  password: z.string().min(6, "비밀번호는 6자 이상이어야 합니다."),
+  password: z
+    .string()
+    .min(8, "비밀번호는 8자 이상이어야 합니다.")
+    .max(128, "비밀번호는 128자 이하여야 합니다.")
+    .regex(/[A-Za-z]/, "영문자를 1개 이상 포함해야 합니다.")
+    .regex(/[0-9]/, "숫자를 1개 이상 포함해야 합니다.")
+    .regex(/[^A-Za-z0-9]/, "특수문자를 1개 이상 포함해야 합니다."),
   employee_no: z.string().min(1, "사번을 입력해주세요.").max(50),
   name: z.string().min(1, "이름을 입력해주세요.").max(50),
   department: z.string().min(1, "부서를 입력해주세요.").max(100),

@@ -6,9 +6,15 @@
 //
 // 수동 트리거: GET /api/cron/update-overdue with Authorization: Bearer ${CRON_SECRET}
 import { NextResponse } from "next/server";
+import { timingSafeEqual } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
+
+function safeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(Buffer.from(a), Buffer.from(b));
+}
 
 export async function GET(req: Request) {
   const secret = process.env.CRON_SECRET;
@@ -21,7 +27,7 @@ export async function GET(req: Request) {
 
   const header = req.headers.get("authorization") || "";
   const provided = header.startsWith("Bearer ") ? header.slice(7) : "";
-  if (provided !== secret) {
+  if (!safeEqual(provided, secret)) {
     return NextResponse.json({ ok: false, error: "UNAUTHORIZED" }, { status: 401 });
   }
 

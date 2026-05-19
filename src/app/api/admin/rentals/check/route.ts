@@ -32,6 +32,15 @@ export async function GET(req: Request) {
     );
   }
 
+  const UUID_RE =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!UUID_RE.test(user_id) || !UUID_RE.test(book_id)) {
+    return NextResponse.json(
+      { ok: false, error: "INVALID_PARAMS" },
+      { status: 400 },
+    );
+  }
+
   const supabase = createAdminClient();
   const { data, error } = await supabase.rpc("check_rental_eligibility", {
     p_user_id: user_id,

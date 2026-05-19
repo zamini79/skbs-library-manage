@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getAnyOrError } from "@/lib/auth/admin-auth";
+import { safeIlike } from "@/lib/safe-ilike";
 
 export const runtime = "nodejs";
 
@@ -15,7 +16,10 @@ export async function GET(req: Request) {
     return NextResponse.json({ books: [] });
   }
 
-  const safe = q.replace(/[,()]/g, "");
+  const safe = safeIlike(q);
+  if (safe.length === 0) {
+    return NextResponse.json({ books: [] });
+  }
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("books")

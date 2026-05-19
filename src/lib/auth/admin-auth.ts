@@ -12,6 +12,8 @@ import { ADMIN_ROLES, type AdminRole } from "@/lib/policies";
 
 export const ADMIN_COOKIE_NAME = "admin_session";
 const TOKEN_MAX_AGE_SEC = 60 * 60 * 8; // 8시간
+const TOKEN_ISSUER = "skbs-library";
+const TOKEN_AUDIENCE = "skbs-admin";
 
 export type AdminTokenPayload = {
   adminId: string;
@@ -41,6 +43,8 @@ export async function signAdminToken(
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime(`${TOKEN_MAX_AGE_SEC}s`)
+    .setIssuer(TOKEN_ISSUER)
+    .setAudience(TOKEN_AUDIENCE)
     .sign(getSecret());
 }
 
@@ -48,7 +52,10 @@ export async function verifyAdminToken(
   token: string,
 ): Promise<AdminTokenPayload | null> {
   try {
-    const { payload } = await jwtVerify(token, getSecret());
+    const { payload } = await jwtVerify(token, getSecret(), {
+      issuer: TOKEN_ISSUER,
+      audience: TOKEN_AUDIENCE,
+    });
     if (
       typeof payload.adminId === "string" &&
       typeof payload.loginId === "string" &&
