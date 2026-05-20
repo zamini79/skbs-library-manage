@@ -1,7 +1,8 @@
-// 매직 링크 클릭 콜백 — Supabase가 두 가지 형태로 보낼 수 있음:
-//   1) PKCE flow:        ?code=...                  → exchangeCodeForSession
-//   2) Email OTP flow:   ?token_hash=...&type=...   → verifyOtp
-// 두 경우 모두 처리하고, 실패 시 회원가입 흐름이면 /signup으로, 그 외는 /login으로 돌려보낸다.
+// 매직 링크 클릭 콜백 — Supabase가 세 가지 형태로 token을 보낼 수 있음:
+//   1) ?code=...                             → exchangeCodeForSession  (PKCE 표준)
+//   2) ?token_hash=pkce_xxx&type=...         → exchangeCodeForSession  (Email Template에 PKCE token을 직접 박은 경우)
+//   3) ?token_hash=xxx&type=...              → verifyOtp               (implicit/OTP token hash)
+// 실패 시 회원가입 흐름이면 /signup으로, 그 외는 /login으로 돌려보낸다.
 //
 // 사용 흐름: 회원가입(Step 1) → 이메일 매직 링크 → 여기로 진입 → /signup/complete (Step 3)
 import { NextResponse } from "next/server";
@@ -33,13 +34,24 @@ export async function GET(request: Request) {
 
   const supabase = createClient();
 
+  // 1) ?code= 직접 전달된 PKCE 흐름
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
       return NextResponse.redirect(`${origin}${next}`);
     }
-    console.error("[auth/callback] exchangeCodeForSession failed:", error.message);
-  } else if (token_hash && isOtpType(type)) {
+    console.error("[auth/callback] exchangeCodeForSession(code) failed:", error.message);
+  }
+  // 2) token_hash가 PKCE 형태(pkce_...)면 동일하게 exchangeCodeForSession 사용
+  else if (token_hash?.startsWith("pkce_")) {
+    const { error } = await supabase.auth.exchangeCodeForSession(token_hash);
+    if (!error) {
+      return NextResponse.redirect(`${origin}${next}`);
+    }
+    console.error("[auth/callback] exchangeCodeForSession(token_hash pkce_*) failed:", error.message);
+  }
+  // 3) token_hash + type가 일반 OTP 형태
+  else if (token_hash && isOtpType(type)) {
     const { error } = await supabase.auth.verifyOtp({ type, token_hash });
     if (!error) {
       return NextResponse.redirect(`${origin}${next}`);
