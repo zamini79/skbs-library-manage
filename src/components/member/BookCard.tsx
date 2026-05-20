@@ -28,13 +28,13 @@ export function BookCard({ book }: { book: Book }) {
           </div>
         </div>
         <div className="p-2 space-y-0.5">
-          <div className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">
+          <div className="text-xs text-muted-foreground uppercase tracking-wider truncate">
             {book.category}
           </div>
-          <div className="text-xs font-medium leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+          <div className="text-sm font-medium leading-tight line-clamp-2 group-hover:text-primary transition-colors">
             {book.title}
           </div>
-          <div className="text-[10px] text-muted-foreground truncate">
+          <div className="text-xs text-muted-foreground truncate">
             {book.author}
           </div>
         </div>

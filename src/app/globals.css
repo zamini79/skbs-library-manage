@@ -65,6 +65,8 @@
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* 기본 16px → 18px. Tailwind의 rem 단위 폰트/간격이 비례적으로 한 단계씩 커짐. */
+    font-size: 18px;
   }
 
   body {
