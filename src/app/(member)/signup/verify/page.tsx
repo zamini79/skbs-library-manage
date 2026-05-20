@@ -28,8 +28,8 @@ function VerifyForm() {
       return;
     }
     const cleanToken = token.replace(/\s/g, "");
-    if (!/^\d{6}$/.test(cleanToken)) {
-      setError("6자리 숫자 코드를 입력해주세요.");
+    if (!/^\d{6,10}$/.test(cleanToken)) {
+      setError("숫자 인증 코드를 입력해주세요.");
       return;
     }
 
@@ -86,17 +86,17 @@ function VerifyForm() {
         <Input value={email} disabled readOnly />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="token">6자리 인증 코드</Label>
+        <Label htmlFor="token">인증 코드</Label>
         <Input
           id="token"
           type="text"
           inputMode="numeric"
           autoComplete="one-time-code"
-          maxLength={6}
+          maxLength={10}
           required
           value={token}
           onChange={(e) => setToken(e.target.value.replace(/[^0-9]/g, ""))}
-          placeholder="000000"
+          placeholder="메일로 받은 숫자 코드"
           disabled={loading}
         />
       </div>
@@ -134,7 +134,7 @@ export default function SignupVerifyPage() {
       <header className="space-y-1">
         <h1 className="text-2xl font-bold tracking-tight">이메일 인증</h1>
         <p className="text-sm text-muted-foreground">
-          입력하신 이메일로 발송된 6자리 인증 코드를 입력해주세요.
+          입력하신 이메일로 발송된 인증 코드를 입력해주세요.
         </p>
       </header>
 
