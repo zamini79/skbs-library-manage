@@ -41,11 +41,15 @@ export default function SignupPage() {
       const supabase = createClient();
       // Supabase signUp는 password가 필수. 임시 랜덤 패스워드 발급, Step 3에서 사용자가 재설정.
       const tempPassword = crypto.randomUUID() + "Aa!1";
+      // 인증 메일 confirm 링크가 향하는 origin.
+      // 우선순위: NEXT_PUBLIC_SITE_URL (운영 도메인 고정) > window.location.origin (로컬 fallback).
+      const siteUrl =
+        process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
       const { error: signupError } = await supabase.auth.signUp({
         email: parsed.data.email,
         password: tempPassword,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=/signup/complete`,
+          emailRedirectTo: `${siteUrl}/auth/callback?next=/signup/complete`,
         },
       });
       if (signupError) {
