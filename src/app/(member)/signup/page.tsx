@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/client";
 import { RENTAL_POLICY } from "@/lib/policies";
@@ -20,10 +21,10 @@ const EmailSchema = z.object({
 });
 
 export default function SignupPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -39,48 +40,24 @@ export default function SignupPage() {
 
     try {
       const supabase = createClient();
-      // Supabase signUp는 password가 필수. 임시 랜덤 패스워드 발급, Step 3에서 사용자가 재설정.
-      const tempPassword = crypto.randomUUID() + "Aa!1";
-      // 인증 메일 confirm 링크가 향하는 origin.
-      // 우선순위: NEXT_PUBLIC_SITE_URL (운영 도메인 고정) > window.location.origin (로컬 fallback).
-      const siteUrl =
-        process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
-      const { error: signupError } = await supabase.auth.signUp({
+      // 6자리 OTP 코드 발송 — magic link 의존성 제거 (디바이스 간 verifier 매칭 이슈 회피).
+      // shouldCreateUser: true 로 신규 사용자 자동 생성.
+      const { error: otpErr } = await supabase.auth.signInWithOtp({
         email: parsed.data.email,
-        password: tempPassword,
-        options: {
-          emailRedirectTo: `${siteUrl}/auth/callback?next=/signup/complete`,
-        },
+        options: { shouldCreateUser: true },
       });
-      if (signupError) {
-        setError(signupError.message);
+      if (otpErr) {
+        setError(otpErr.message);
         return;
       }
-      setSent(true);
+      router.push(
+        `/signup/verify?email=${encodeURIComponent(parsed.data.email)}`,
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : "가입 처리 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
     }
-  }
-
-  if (sent) {
-    return (
-      <div className="max-w-md mx-auto space-y-6">
-        <div className="bg-card border rounded-lg p-8 text-center space-y-4">
-          <div className="text-4xl">📧</div>
-          <h1 className="text-xl font-bold">인증 메일을 발송했습니다</h1>
-          <p className="text-sm text-muted-foreground">
-            <span className="font-mono">{email}</span> 으로 발송한 메일의 링크를 클릭하면
-            <br />
-            비밀번호와 사번/부서 입력 화면으로 이동합니다.
-          </p>
-          <p className="text-xs text-muted-foreground">
-            메일이 보이지 않으면 스팸함을 확인해주세요.
-          </p>
-        </div>
-      </div>
-    );
   }
 
   return (
@@ -114,7 +91,7 @@ export default function SignupPage() {
         )}
 
         <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "발송 중..." : "인증 메일 받기"}
+          {loading ? "발송 중..." : "인증 코드 받기"}
         </Button>
 
         <p className="text-xs text-muted-foreground text-center">
