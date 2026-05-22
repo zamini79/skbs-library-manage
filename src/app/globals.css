@@ -105,6 +105,15 @@
   .tabular {
     font-variant-numeric: tabular-nums;
   }
+
+  /* 가로 스크롤 영역(모바일 카테고리 칩 등)의 스크롤바 숨김 */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @layer components {

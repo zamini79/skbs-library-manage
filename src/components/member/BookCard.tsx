@@ -30,13 +30,15 @@ export function BookCard({ book }: { book: Book }) {
       </div>
 
       <div className="px-1">
-        <div className="text-[11px] text-ink-muted tracking-wide">
+        <div className="text-[10px] md:text-[11px] text-ink-muted tracking-wide">
           {book.category}
         </div>
-        <div className="font-serif text-[15px] font-bold text-ink leading-tight line-clamp-2 mt-1 group-hover:text-library-accent transition-colors">
+        <div className="font-serif text-[13px] md:text-[15px] font-bold text-ink leading-tight line-clamp-2 mt-1 group-hover:text-library-accent transition-colors">
           {book.title}
         </div>
-        <div className="text-xs text-ink-soft mt-1 truncate">{book.author}</div>
+        <div className="text-[11px] md:text-xs text-ink-soft mt-1 truncate">
+          {book.author}
+        </div>
       </div>
     </Link>
   );
