@@ -3,9 +3,11 @@ import {
   BOOK_CATEGORIES,
   type BookCategory,
 } from "@/lib/policies";
+import { safeIlike } from "@/lib/safe-ilike";
 import { BookCard } from "@/components/member/BookCard";
 import { CategoryTabs } from "@/components/member/CategoryTabs";
 import { BookSortFilter } from "@/components/member/BookSortFilter";
+import { BookSearch } from "@/components/member/BookSearch";
 import { BookPagination } from "@/components/member/BookPagination";
 
 const PAGE_SIZE = 14; // PC 1920x1080 기준 7 cols × 2 rows (book 2:3 비율 유지)
@@ -32,6 +34,7 @@ export default async function MemberHomePage({
     sort?: string;
     dir?: string;
     page?: string;
+    q?: string;
   };
 }) {
   const supabase = createClient();
@@ -41,6 +44,8 @@ export default async function MemberHomePage({
   const sort: Sort = isSort(searchParams.sort) ? searchParams.sort : "title";
   const dir: Dir = isDir(searchParams.dir) ? searchParams.dir : "asc";
   const requestedPage = Math.max(1, Number(searchParams.page) || 1);
+  const rawQ = (searchParams.q ?? "").trim();
+  const safeQ = rawQ ? safeIlike(rawQ) : "";
 
   let query = supabase
     .from("books")
@@ -49,6 +54,9 @@ export default async function MemberHomePage({
     .order(sort, { ascending: dir === "asc" });
 
   if (category) query = query.eq("category", category);
+  if (safeQ) {
+    query = query.or(`title.ilike.%${safeQ}%,author.ilike.%${safeQ}%`);
+  }
 
   const offset = (requestedPage - 1) * PAGE_SIZE;
   const { data: books, count, error } = await query.range(
@@ -58,7 +66,7 @@ export default async function MemberHomePage({
 
   const totalPages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE));
   const currentPage = Math.min(requestedPage, totalPages);
-  const baseParams = { category, sort, dir };
+  const baseParams = { category, sort, dir, q: rawQ || undefined };
 
   return (
     <div className="space-y-3">
@@ -75,8 +83,9 @@ export default async function MemberHomePage({
 
       <CategoryTabs current={category} />
 
-      <div className="flex items-center justify-start">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <BookSortFilter current={sort} dir={dir} />
+        <BookSearch />
       </div>
 
       {error ? (
@@ -87,9 +96,11 @@ export default async function MemberHomePage({
         <div className="p-10 text-center bg-muted rounded-md space-y-2">
           <div className="text-2xl">📚</div>
           <div className="text-sm text-muted-foreground">
-            {category
-              ? `'${category}' 카테고리에 등록된 도서가 없습니다.`
-              : "아직 등록된 도서가 없습니다."}
+            {rawQ
+              ? `'${rawQ}' 검색 결과가 없습니다.`
+              : category
+                ? `'${category}' 카테고리에 등록된 도서가 없습니다.`
+                : "아직 등록된 도서가 없습니다."}
           </div>
         </div>
       ) : (

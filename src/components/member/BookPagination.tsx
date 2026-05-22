@@ -5,6 +5,7 @@ type BaseParams = {
   category?: string;
   sort?: string;
   dir?: string;
+  q?: string;
 };
 
 function buildHref(page: number, base: BaseParams): string {
@@ -12,6 +13,7 @@ function buildHref(page: number, base: BaseParams): string {
   if (base.category) params.set("category", base.category);
   if (base.sort && base.sort !== "title") params.set("sort", base.sort);
   if (base.dir && base.dir !== "asc") params.set("dir", base.dir);
+  if (base.q) params.set("q", base.q);
   if (page > 1) params.set("page", String(page));
   const qs = params.toString();
   return qs ? `?${qs}` : "?";
