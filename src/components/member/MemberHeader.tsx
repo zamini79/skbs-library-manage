@@ -29,10 +29,10 @@ export function MemberHeader({ name }: { name: string | null }) {
           : "bg-bg border-b border-transparent",
       )}
     >
-      <div className="container mx-auto py-4 flex items-center justify-between">
+      <div className="mx-auto w-full max-w-[1720px] px-8 py-2.5 flex items-center justify-between">
         <Link
           href="/"
-          className="font-serif text-lg font-bold tracking-tight text-ink hover:text-library-accent transition-colors"
+          className="font-serif text-base font-bold tracking-tight text-ink hover:text-library-accent transition-colors"
         >
           SK Bioscience 사내 도서관
         </Link>

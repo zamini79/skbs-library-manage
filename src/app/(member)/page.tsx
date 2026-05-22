@@ -10,7 +10,7 @@ import { BookSortFilter } from "@/components/member/BookSortFilter";
 import { BookSearch } from "@/components/member/BookSearch";
 import { BookPagination } from "@/components/member/BookPagination";
 
-const PAGE_SIZE = 14; // PC 1920x1080 기준 7 cols × 2 rows (book 2:3 비율 유지)
+const PAGE_SIZE = 18; // PC 1920x1080 기준 9 cols × 2 rows (book 2:3 비율 유지)
 
 function isCategory(v: string | undefined): v is BookCategory {
   return !!v && (BOOK_CATEGORIES as readonly string[]).includes(v);
@@ -96,22 +96,22 @@ export default async function MemberHomePage({
         <BookSearch />
       </section>
 
-      {/* 데스크탑 editorial hero (paper-warm 박스 + 검색바) */}
-      <section className="hidden md:block bg-paper-warm border border-line rounded-md p-6 md:p-10">
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-          <div className="space-y-3 max-w-xl">
-            <div className="text-xs text-ink-muted tracking-overline uppercase">
+      {/* 데스크탑 editorial hero (paper-warm 박스 + 검색바) — 1920×1080 한 화면 수용 위해 컴팩트화 */}
+      <section className="hidden md:block bg-paper-warm border border-line rounded-md px-6 py-4 xl:px-8 xl:py-5">
+        <div className="flex flex-row items-center justify-between gap-6">
+          <div className="space-y-1">
+            <div className="text-[10px] text-ink-muted tracking-overline uppercase">
               SK BIOSCIENCE LIBRARY
             </div>
-            <h1 className="font-serif text-3xl md:text-4xl font-bold tracking-tight text-ink leading-[1.1]">
+            <h1 className="font-serif text-2xl xl:text-3xl font-bold tracking-tight text-ink leading-tight">
               오늘, 어떤 책장을 열어볼까요.
             </h1>
-            <p className="text-sm text-ink-soft">
+            <p className="text-xs text-ink-soft">
               총{" "}
               <span className="font-mono font-medium text-ink">
                 {(count ?? 0).toLocaleString()}
               </span>
-              권의 책이 등록되어 있어요.
+              권 등록
               {rawQ && (
                 <>
                   {" "}
@@ -124,19 +124,34 @@ export default async function MemberHomePage({
               )}
             </p>
           </div>
-          <div className="md:flex-shrink-0">
+          <div className="flex-shrink-0">
             <BookSearch />
           </div>
         </div>
       </section>
 
-      <CategoryTabs current={category} />
+      {/* 모바일: 카테고리 한 줄, 정렬+페이지는 다음 줄 */}
+      <div className="md:hidden space-y-3">
+        <CategoryTabs current={category} />
+        <div className="flex items-center justify-between gap-2">
+          <BookSortFilter current={sort} dir={dir} />
+          <span className="text-xs text-ink-muted font-mono tabular">
+            페이지 {currentPage} / {totalPages}
+          </span>
+        </div>
+      </div>
 
-      <div className="flex items-center justify-between gap-2">
-        <BookSortFilter current={sort} dir={dir} />
-        <span className="text-xs text-ink-muted font-mono tabular">
-          페이지 {currentPage} / {totalPages}
-        </span>
+      {/* 데스크탑: 카테고리 + 정렬 + 페이지를 한 줄에 */}
+      <div className="hidden md:flex md:items-center md:justify-between md:gap-4">
+        <div className="flex-1 min-w-0">
+          <CategoryTabs current={category} />
+        </div>
+        <div className="flex items-center gap-3 flex-shrink-0">
+          <BookSortFilter current={sort} dir={dir} />
+          <span className="text-xs text-ink-muted font-mono tabular whitespace-nowrap">
+            페이지 {currentPage} / {totalPages}
+          </span>
+        </div>
       </div>
 
       {error ? (
@@ -156,7 +171,7 @@ export default async function MemberHomePage({
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-x-4 gap-y-6 md:gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 2xl:grid-cols-9 gap-x-4 gap-y-6 md:gap-3">
             {books.map((book) => (
               <BookCard key={book.id} book={book} />
             ))}
