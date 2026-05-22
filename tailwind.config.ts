@@ -77,9 +77,28 @@ const config: Config = {
           section: "hsl(var(--sidebar-section))",
           border: "hsl(var(--sidebar-border))",
         },
+        // 신규 라이브러리 디자인 토큰 (멤버 페이지 한정)
+        // 색상값은 hex 그대로. 점진적 리프레시 동안 기존 hsl 시스템과 공존.
+        bg: "#f5ecdc",
+        paper: "#fbf6ea",
+        "paper-warm": "#f1e6cf",
+        ink: "#2a1d10",
+        "ink-soft": "#5a4633",
+        "ink-muted": "#8a7860",
+        "library-accent": "#7c3a1d",
+        "library-accent-soft": "#c97b4e",
+        line: "#d9c8a9",
+        "line-soft": "#ece1c6",
+        ok: "#4a7a3a",
+        "ok-soft": "#e7f0d8",
+        "ok-border": "#cfdfbd",
+        busy: "#a86133",
+        "busy-soft": "#f3e2cf",
+        "busy-border": "#e9caaa",
       },
       fontFamily: {
         sans: ["var(--font-noto-sans-kr)", "system-ui", "sans-serif"],
+        serif: ["var(--font-serif)", "'Source Serif Pro'", "Georgia", "serif"],
         mono: ["var(--font-jetbrains-mono)", "ui-monospace", "monospace"],
       },
       fontSize: {
@@ -99,6 +118,8 @@ const config: Config = {
         DEFAULT: "3px",
         md: "4px",
         lg: "6px",
+        cover: "3px",
+        pill: "999px",
       },
       boxShadow: {
         sm: "0 1px 2px rgba(0,0,0,0.04)",
@@ -106,6 +127,17 @@ const config: Config = {
         md: "0 4px 12px rgba(0,0,0,0.06)",
         lg: "0 8px 24px rgba(0,0,0,0.12)",
         xl: "0 20px 60px rgba(0,0,0,0.3)",
+        cover:
+          "0 30px 60px -28px rgba(40,25,10,0.45), 0 0 0 1px rgba(0,0,0,0.04)",
+        card: "0 12px 30px -22px rgba(40,30,15,0.35)",
+        dropdown: "0 12px 30px -10px rgba(40,30,15,0.18)",
+      },
+      letterSpacing: {
+        overline: "0.22em",
+        eyebrow: "0.25em",
+      },
+      maxWidth: {
+        page: "1280px",
       },
       keyframes: {
         "accordion-down": {

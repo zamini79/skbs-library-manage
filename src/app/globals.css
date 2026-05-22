@@ -53,6 +53,34 @@
     --sidebar-border: 0 0% 20%;
 
     --radius: 3px;
+
+    /* ──────────────────────────────────────────────
+     * 신규 라이브러리 디자인 토큰 (도서 둘러보기/상세/내 책장)
+     * Tailwind class와 별개로 inline style·content prop 등에서 사용.
+     * Tailwind 측 대응 클래스: bg-bg / bg-paper / text-ink / text-ok 등.
+     * ────────────────────────────────────────────── */
+    --library-bg: #f5ecdc;
+    --library-paper: #fbf6ea;
+    --library-paper-warm: #f1e6cf;
+    --library-ink: #2a1d10;
+    --library-ink-soft: #5a4633;
+    --library-ink-muted: #8a7860;
+    --library-accent: #7c3a1d;
+    --library-accent-soft: #c97b4e;
+    --library-line: #d9c8a9;
+    --library-line-soft: #ece1c6;
+    --library-ok: #4a7a3a;
+    --library-ok-soft: #e7f0d8;
+    --library-ok-border: #cfdfbd;
+    --library-busy: #a86133;
+    --library-busy-soft: #f3e2cf;
+    --library-busy-border: #e9caaa;
+
+    --library-shadow-cover: 0 30px 60px -28px rgba(40, 25, 10, 0.45),
+      0 0 0 1px rgba(0, 0, 0, 0.04);
+    --library-shadow-card: 0 12px 30px -22px rgba(40, 30, 15, 0.35);
+
+    --library-ease-out: cubic-bezier(0.2, 0.7, 0.3, 1);
   }
 
   /* 다크모드 (Phase 3+ 검토) */
