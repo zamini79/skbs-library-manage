@@ -71,11 +71,14 @@ export default async function MemberHomePage({
   return (
     <div className="space-y-3">
       <header className="space-y-1">
-        <h1 className="text-2xl font-bold tracking-tight">도서 조회</h1>
-        <p className="text-xs text-muted-foreground">
-          총 <span className="font-mono font-medium text-foreground">{count ?? 0}</span>권
+        <h1 className="font-serif text-3xl font-bold tracking-tight text-ink">
+          도서 조회
+        </h1>
+        <p className="text-xs text-ink-muted">
+          총{" "}
+          <span className="font-mono font-medium text-ink">{count ?? 0}</span>권
           · 페이지{" "}
-          <span className="font-mono tabular">
+          <span className="font-mono tabular text-ink">
             {currentPage} / {totalPages}
           </span>
         </p>
