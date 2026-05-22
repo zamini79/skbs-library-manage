@@ -102,12 +102,12 @@ function VerifyForm() {
       </div>
 
       {error && (
-        <div className="text-sm text-destructive bg-destructive-bg px-3 py-2 rounded">
+        <div className="text-sm text-busy bg-busy-soft border border-busy-border px-3 py-2 rounded-md">
           {error}
         </div>
       )}
       {resendInfo && (
-        <div className="text-sm text-foreground bg-muted px-3 py-2 rounded">
+        <div className="text-sm text-ok bg-ok-soft border border-ok-border px-3 py-2 rounded-md">
           {resendInfo}
         </div>
       )}
@@ -132,20 +132,22 @@ export default function SignupVerifyPage() {
   return (
     <div className="max-w-md mx-auto space-y-6">
       <header className="space-y-1">
-        <h1 className="text-2xl font-bold tracking-tight">이메일 인증</h1>
-        <p className="text-sm text-muted-foreground">
+        <h1 className="font-serif text-2xl font-bold tracking-tight text-ink">
+          이메일 인증
+        </h1>
+        <p className="text-sm text-ink-soft">
           입력하신 이메일로 발송된 인증 코드를 입력해주세요.
         </p>
       </header>
 
-      <div className="bg-card border rounded-lg p-6 space-y-4">
+      <div className="bg-paper border border-line rounded-md p-6 space-y-4">
         <Suspense fallback={null}>
           <VerifyForm />
         </Suspense>
 
-        <p className="text-xs text-muted-foreground text-center">
+        <p className="text-xs text-ink-muted text-center">
           이메일을 잘못 입력하셨나요?{" "}
-          <Link href="/signup" className="text-primary hover:underline">
+          <Link href="/signup" className="text-library-accent hover:underline">
             다시 입력
           </Link>
         </p>

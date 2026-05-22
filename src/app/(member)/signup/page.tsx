@@ -63,13 +63,18 @@ export default function SignupPage() {
   return (
     <div className="max-w-md mx-auto space-y-6">
       <header className="space-y-1">
-        <h1 className="text-2xl font-bold tracking-tight">회원가입</h1>
-        <p className="text-sm text-muted-foreground">
+        <h1 className="font-serif text-2xl font-bold tracking-tight text-ink">
+          회원가입
+        </h1>
+        <p className="text-sm text-ink-soft">
           회사 이메일({RENTAL_POLICY.EMAIL_DOMAIN})로 가입할 수 있습니다.
         </p>
       </header>
 
-      <form onSubmit={onSubmit} className="space-y-4 bg-card border rounded-lg p-6">
+      <form
+        onSubmit={onSubmit}
+        className="space-y-4 bg-paper border border-line rounded-md p-6"
+      >
         <div className="space-y-2">
           <Label htmlFor="email">이메일</Label>
           <Input
@@ -85,7 +90,7 @@ export default function SignupPage() {
         </div>
 
         {error && (
-          <div className="text-sm text-destructive bg-destructive-bg px-3 py-2 rounded">
+          <div className="text-sm text-busy bg-busy-soft border border-busy-border px-3 py-2 rounded-md">
             {error}
           </div>
         )}
@@ -94,9 +99,9 @@ export default function SignupPage() {
           {loading ? "발송 중..." : "인증 코드 받기"}
         </Button>
 
-        <p className="text-xs text-muted-foreground text-center">
+        <p className="text-xs text-ink-muted text-center">
           이미 계정이 있으신가요?{" "}
-          <Link href="/login" className="text-primary hover:underline">
+          <Link href="/login" className="text-library-accent hover:underline">
             로그인
           </Link>
         </p>

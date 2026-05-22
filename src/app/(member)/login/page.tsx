@@ -75,7 +75,7 @@ function LoginForm() {
       </div>
 
       {error && (
-        <div className="text-sm text-destructive bg-destructive-bg px-3 py-2 rounded">
+        <div className="text-sm text-busy bg-busy-soft border border-busy-border px-3 py-2 rounded-md">
           {error}
         </div>
       )}
@@ -91,26 +91,31 @@ export default function MemberLoginPage() {
   return (
     <div className="max-w-md mx-auto space-y-6">
       <header className="space-y-1">
-        <h1 className="text-2xl font-bold tracking-tight">로그인</h1>
-        <p className="text-sm text-muted-foreground">
+        <h1 className="font-serif text-2xl font-bold tracking-tight text-ink">
+          로그인
+        </h1>
+        <p className="text-sm text-ink-soft">
           가입하신 이메일과 비밀번호로 로그인하세요.
         </p>
       </header>
 
-      <div className="bg-card border rounded-lg p-6 space-y-4">
+      <div className="bg-paper border border-line rounded-md p-6 space-y-4">
         <Suspense fallback={null}>
           <LoginForm />
         </Suspense>
 
-        <p className="text-xs text-muted-foreground text-center">
+        <p className="text-xs text-ink-muted text-center">
           계정이 없으신가요?{" "}
-          <Link href="/signup" className="text-primary hover:underline">
+          <Link href="/signup" className="text-library-accent hover:underline">
             회원가입
           </Link>
         </p>
-        <p className="text-xs text-muted-foreground text-center">
+        <p className="text-xs text-ink-muted text-center">
           관리자이신가요?{" "}
-          <Link href="/admin/login" className="text-primary hover:underline">
+          <Link
+            href="/admin/login"
+            className="text-library-accent hover:underline"
+          >
             관리자 로그인
           </Link>
         </p>

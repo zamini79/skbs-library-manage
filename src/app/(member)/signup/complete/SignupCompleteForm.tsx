@@ -93,7 +93,10 @@ export function SignupCompleteForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4 bg-card border rounded-lg p-6">
+    <form
+      onSubmit={onSubmit}
+      className="space-y-4 bg-paper border border-line rounded-md p-6"
+    >
       <div className="space-y-2">
         <Label>이메일</Label>
         <Input value={email} disabled className="font-mono" />
@@ -150,7 +153,7 @@ export function SignupCompleteForm({
       </div>
 
       {error && (
-        <div className="text-sm text-destructive bg-destructive-bg px-3 py-2 rounded">
+        <div className="text-sm text-busy bg-busy-soft border border-busy-border px-3 py-2 rounded-md">
           {error}
         </div>
       )}

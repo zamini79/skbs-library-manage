@@ -28,8 +28,10 @@ export default async function SignupCompletePage() {
   return (
     <div className="max-w-md mx-auto space-y-6">
       <header className="space-y-1">
-        <h1 className="text-2xl font-bold tracking-tight">프로필 작성</h1>
-        <p className="text-sm text-muted-foreground">
+        <h1 className="font-serif text-2xl font-bold tracking-tight text-ink">
+          프로필 작성
+        </h1>
+        <p className="text-sm text-ink-soft">
           이메일 인증 완료. 비밀번호와 기본 정보를 입력해주세요.
         </p>
       </header>
