@@ -40,19 +40,35 @@ function pickFor(id: string): { palette: Palette; style: Style } {
 
 type Props = {
   book: Pick<Book, "id" | "title" | "author" | "category" | "cover_url" | "cover_url_external">;
+  /** 표지의 최대 너비(px). fluid=true 일 때는 컨테이너 폭에 맞춰 줄어듦. */
   width?: number;
   shadow?: boolean;
+  /**
+   * true 면 컨테이너 폭에 맞춰 늘어나되 width 를 max-width 상한으로 사용.
+   * 그리드 셀이 width 보다 좁은 환경(모바일)에서 표지가 셀을 넘지 않도록.
+   */
+  fluid?: boolean;
   className?: string;
 };
 
-export function BookCover({ book, width = 170, shadow = true, className }: Props) {
+export function BookCover({
+  book,
+  width = 170,
+  shadow = true,
+  fluid = false,
+  className,
+}: Props) {
   const cover = book.cover_url || book.cover_url_external;
+
+  const sizeStyle: React.CSSProperties = fluid
+    ? { width: "100%", maxWidth: width, aspectRatio: "1 / 1.45" }
+    : { width, aspectRatio: "1 / 1.45" };
 
   // 1) 실이미지 우선
   if (cover) {
     return (
       <div
-        style={{ width, aspectRatio: "1 / 1.45" }}
+        style={sizeStyle}
         className={cn(
           "relative rounded-cover overflow-hidden",
           shadow && "shadow-cover",
@@ -71,13 +87,11 @@ export function BookCover({ book, width = 170, shadow = true, className }: Props
 
   // 2) Placeholder — 책 id로 deterministic palette × style 선택
   const { palette, style } = pickFor(book.id);
-  const h = Math.round(width * 1.45);
   const titleSize = Math.max(11, Math.round(width * 0.11));
   const authorSize = Math.max(9, Math.round(width * 0.065));
 
   const baseStyle: React.CSSProperties = {
-    width,
-    height: h,
+    ...sizeStyle,
     background: palette.bg,
     color: palette.paper,
     fontFamily: "'Noto Serif KR', 'Source Serif Pro', serif",
