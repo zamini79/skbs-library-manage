@@ -13,7 +13,7 @@ export function BookCard({ book }: { book: Book }) {
       className="group flex flex-col gap-3.5 cursor-pointer"
     >
       <div className="relative self-center w-full max-w-[170px]">
-        <div className="transition-transform duration-[250ms] ease-[cubic-bezier(0.2,0.7,0.3,1)] group-hover:-translate-y-1">
+        <div className="transition-transform duration-300 ease-out group-hover:-translate-y-1">
           <BookCover book={book} width={170} fluid />
         </div>
 

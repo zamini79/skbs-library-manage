@@ -4,6 +4,9 @@ import { createClient } from "@/lib/supabase/server";
 import { RENTAL_POLICY } from "@/lib/policies";
 import { BookCover } from "@/components/member/BookCover";
 import { cn } from "@/lib/utils";
+import type { Database } from "@/types/database.types";
+
+type BookRow = Database["public"]["Tables"]["books"]["Row"];
 
 type RentalRow = {
   id: string;
@@ -11,14 +14,10 @@ type RentalRow = {
   rented_at: string;
   due_date: string;
   returned_at: string | null;
-  book: {
-    id: string;
-    title: string;
-    author: string;
-    category: string;
-    cover_url: string | null;
-    cover_url_external: string | null;
-  } | null;
+  book: Pick<
+    BookRow,
+    "id" | "title" | "author" | "category" | "cover_url" | "cover_url_external"
+  > | null;
 };
 
 function fmtDate(iso: string) {
