@@ -1,5 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { MemberHeader } from "@/components/member/MemberHeader";
+import { MobileTopBar } from "@/components/member/MobileTopBar";
+import { MobileBottomNav } from "@/components/member/MobileBottomNav";
 
 export default async function MemberLayout({
   children,
@@ -21,15 +23,29 @@ export default async function MemberLayout({
     name = profile?.name ?? null;
   }
 
+  const loggedIn = !!user;
+
   return (
     <div className="min-h-screen flex flex-col bg-bg text-ink">
-      <MemberHeader name={name} />
-      <main className="flex-1 container mx-auto py-8">{children}</main>
-      <footer className="border-t border-line bg-paper py-4">
+      {/* 데스크탑 헤더 (md 이상) */}
+      <div className="hidden md:contents">
+        <MemberHeader name={name} />
+      </div>
+      {/* 모바일 상단 바 (md 미만) */}
+      <MobileTopBar loggedIn={loggedIn} />
+
+      <main className="flex-1 container mx-auto py-8 pb-28 md:pb-8">
+        {children}
+      </main>
+
+      {/* 데스크탑 푸터 */}
+      <footer className="hidden md:block border-t border-line bg-paper py-4">
         <div className="container mx-auto text-xs text-ink-muted text-center">
           © SK Bioscience · 사내 도서 관리 시스템
         </div>
       </footer>
+      {/* 모바일 하단 탭바 */}
+      <MobileBottomNav loggedIn={loggedIn} />
     </div>
   );
 }
