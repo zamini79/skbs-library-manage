@@ -54,7 +54,7 @@ export function BookPagination({
   const atEnd = current >= total;
 
   const navBtn =
-    "w-9 h-9 inline-flex items-center justify-center rounded-md border bg-card transition-colors";
+    "w-9 h-9 inline-flex items-center justify-center rounded-md border border-line bg-paper text-ink transition-colors";
 
   return (
     <nav className="flex items-center justify-center gap-1 text-sm flex-wrap">
@@ -66,7 +66,7 @@ export function BookPagination({
           navBtn,
           atStart
             ? "pointer-events-none opacity-40"
-            : "hover:bg-muted hover:border-foreground",
+            : "hover:bg-line-soft hover:border-ink-soft",
         )}
         aria-label="이전 페이지"
       >
@@ -77,7 +77,7 @@ export function BookPagination({
         p === "ellipsis" ? (
           <span
             key={`e${i}`}
-            className="w-7 h-9 inline-flex items-center justify-center text-muted-foreground"
+            className="w-7 h-9 inline-flex items-center justify-center text-ink-muted"
             aria-hidden="true"
           >
             …
@@ -90,8 +90,8 @@ export function BookPagination({
             className={cn(
               "min-w-9 h-9 px-2 inline-flex items-center justify-center rounded-md border text-xs font-mono tabular transition-colors",
               p === current
-                ? "bg-foreground text-background border-foreground"
-                : "bg-card hover:bg-muted hover:border-foreground",
+                ? "bg-ink text-paper border-ink"
+                : "bg-paper border-line text-ink hover:bg-line-soft hover:border-ink-soft",
             )}
           >
             {p}
@@ -107,7 +107,7 @@ export function BookPagination({
           navBtn,
           atEnd
             ? "pointer-events-none opacity-40"
-            : "hover:bg-muted hover:border-foreground",
+            : "hover:bg-line-soft hover:border-ink-soft",
         )}
         aria-label="다음 페이지"
       >

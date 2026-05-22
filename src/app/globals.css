@@ -108,12 +108,12 @@
 }
 
 @layer components {
-  /* 카테고리 칩 */
+  /* 카테고리 칩 — 라이브러리 디자인 토큰 */
   .category-chip {
-    @apply inline-flex items-center px-3 py-1.5 rounded-full bg-card border border-border text-sm cursor-pointer transition-colors hover:bg-muted;
+    @apply inline-flex items-center px-3.5 py-1.5 rounded-pill bg-paper border border-line text-sm text-ink-soft cursor-pointer transition-colors hover:bg-line-soft hover:text-ink;
   }
   .category-chip.active {
-    @apply bg-foreground text-background border-foreground;
+    @apply bg-ink text-paper border-ink hover:bg-ink hover:text-paper;
   }
 
   /* 상태 뱃지 */

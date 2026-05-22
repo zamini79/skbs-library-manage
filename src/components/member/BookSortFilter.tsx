@@ -43,7 +43,7 @@ export function BookSortFilter({
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-xs text-muted-foreground">정렬</span>
+      <span className="text-xs text-ink-muted">정렬</span>
       <Select value={current} onValueChange={setField}>
         <SelectTrigger className="w-28 h-8">
           <SelectValue />
