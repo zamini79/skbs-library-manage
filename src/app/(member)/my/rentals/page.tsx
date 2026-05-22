@@ -150,12 +150,11 @@ export default async function MyRentalsPage() {
   return (
     <div className="space-y-8">
       <header className="space-y-1">
-        <div className="md:hidden text-[11px] text-library-accent tracking-overline uppercase font-bold">
+        <div className="text-[11px] text-library-accent tracking-overline uppercase font-bold">
           MY SHELF
         </div>
         <h1 className="font-serif text-[22px] md:text-3xl font-bold tracking-tight text-ink leading-[1.15]">
-          <span className="md:hidden">{profile.name}님의 책장</span>
-          <span className="hidden md:inline">내 대여현황</span>
+          {profile.name}님의 책장
         </h1>
         <p className="text-sm text-ink-soft">
           {profile.department} · 사번 {profile.employee_no} · 대출중{" "}

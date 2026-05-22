@@ -13,10 +13,9 @@ export function MobileTopBar({ loggedIn }: { loggedIn: boolean }) {
       <div className="flex items-center justify-between px-[18px] py-[14px]">
         <Link
           href="/"
-          className="font-serif text-[18px] font-bold tracking-tight text-ink"
+          className="font-serif text-[16px] font-bold tracking-tight text-ink truncate min-w-0"
         >
-          SK Bio
-          <span className="text-library-accent">책장</span>
+          SK Bioscience 사내 도서관
         </Link>
         <nav className="flex items-center gap-[14px] text-ink-soft">
           <Link
