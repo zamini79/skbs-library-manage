@@ -69,26 +69,48 @@ export default async function MemberHomePage({
   const baseParams = { category, sort, dir, q: rawQ || undefined };
 
   return (
-    <div className="space-y-3">
-      <header className="space-y-1">
-        <h1 className="font-serif text-3xl font-bold tracking-tight text-ink">
-          도서 조회
-        </h1>
-        <p className="text-xs text-ink-muted">
-          총{" "}
-          <span className="font-mono font-medium text-ink">{count ?? 0}</span>권
-          · 페이지{" "}
-          <span className="font-mono tabular text-ink">
-            {currentPage} / {totalPages}
-          </span>
-        </p>
-      </header>
+    <div className="space-y-6">
+      {/* editorial hero */}
+      <section className="bg-paper-warm border border-line rounded-md p-6 md:p-10">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+          <div className="space-y-3 max-w-xl">
+            <div className="text-xs text-ink-muted tracking-overline uppercase">
+              SK BIOSCIENCE LIBRARY
+            </div>
+            <h1 className="font-serif text-3xl md:text-4xl font-bold tracking-tight text-ink leading-[1.1]">
+              오늘, 어떤 책장을 열어볼까요.
+            </h1>
+            <p className="text-sm text-ink-soft">
+              총{" "}
+              <span className="font-mono font-medium text-ink">
+                {(count ?? 0).toLocaleString()}
+              </span>
+              권의 책이 등록되어 있어요.
+              {rawQ && (
+                <>
+                  {" "}
+                  ·{" "}
+                  <span className="text-ink">
+                    &ldquo;{rawQ}&rdquo;
+                  </span>{" "}
+                  검색 결과
+                </>
+              )}
+            </p>
+          </div>
+          <div className="md:flex-shrink-0">
+            <BookSearch />
+          </div>
+        </div>
+      </section>
 
       <CategoryTabs current={category} />
 
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+      <div className="flex items-center justify-between gap-2">
         <BookSortFilter current={sort} dir={dir} />
-        <BookSearch />
+        <span className="text-xs text-ink-muted font-mono tabular">
+          페이지 {currentPage} / {totalPages}
+        </span>
       </div>
 
       {error ? (
