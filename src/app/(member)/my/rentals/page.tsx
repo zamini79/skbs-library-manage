@@ -1,4 +1,5 @@
 // 내 대여현황 — 로그인 필수. RLS rentals_select_own로 본인 데이터만 자동 필터링.
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { RENTAL_POLICY } from "@/lib/policies";
@@ -149,11 +150,17 @@ export default async function MyRentalsPage() {
   return (
     <div className="space-y-8">
       <header className="space-y-1">
-        <h1 className="font-serif text-3xl font-bold tracking-tight text-ink">
-          내 대여현황
+        <div className="md:hidden text-[11px] text-library-accent tracking-overline uppercase font-bold">
+          MY SHELF
+        </div>
+        <h1 className="font-serif text-[22px] md:text-3xl font-bold tracking-tight text-ink leading-[1.15]">
+          <span className="md:hidden">{profile.name}님의 책장</span>
+          <span className="hidden md:inline">내 대여현황</span>
         </h1>
         <p className="text-sm text-ink-soft">
-          {profile.name}님 · {profile.department} · 사번 {profile.employee_no}
+          {profile.department} · 사번 {profile.employee_no} · 대출중{" "}
+          <span className="font-mono text-ink">{activeCount}</span> · 완독{" "}
+          <span className="font-mono text-ink">{history.length}</span>
         </p>
       </header>
 
@@ -241,36 +248,66 @@ export default async function MyRentalsPage() {
 
       {/* 과거 이력 */}
       <section className="space-y-3">
-        <h2 className="font-serif text-xl font-bold text-ink">대여 이력</h2>
+        <h2 className="font-serif text-[17px] md:text-xl font-bold text-ink">
+          대여 이력
+        </h2>
         {history.length === 0 ? (
           <div className="bg-paper border border-line rounded-md p-6 text-center text-sm text-ink-muted">
             반납 완료된 대여가 없습니다.
           </div>
         ) : (
-          <ul className="bg-paper border border-line rounded-md divide-y divide-line">
-            {history.map((r) => (
-              <li key={r.id} className="p-3 flex items-center gap-3 text-sm">
-                <CoverThumb book={r.book} />
-                <div className="flex-1 min-w-0 space-y-0.5">
-                  <div className="font-serif text-base font-bold text-ink truncate">
+          <>
+            {/* 모바일: 3-col grid (표지 + 짧은 제목) */}
+            <div className="md:hidden grid grid-cols-3 gap-x-3 gap-y-5">
+              {history.map((r) => (
+                <Link
+                  key={r.id}
+                  href={r.book ? `/books/${r.book.id}` : "/"}
+                  className="group"
+                >
+                  {r.book ? (
+                    <BookCover book={r.book} width={106} fluid />
+                  ) : (
+                    <div className="w-full aspect-[1/1.45] bg-line-soft rounded-cover border border-line" />
+                  )}
+                  <div className="font-serif text-[12px] font-bold text-ink leading-tight line-clamp-2 mt-2 group-hover:text-library-accent transition-colors">
                     {r.book?.title ?? "(삭제됨)"}
                   </div>
-                  <div className="text-xs text-ink-soft">{r.book?.author}</div>
-                  <div className="text-xs text-ink-muted">
-                    대여{" "}
-                    <span className="font-mono tabular">
-                      {fmtDate(r.rented_at)}
-                    </span>{" "}
-                    · 반납{" "}
-                    <span className="font-mono tabular">
-                      {r.returned_at ? fmtDate(r.returned_at) : "—"}
-                    </span>
+                  <div className="text-[10px] text-ink-muted font-mono tabular mt-0.5">
+                    {r.returned_at ? fmtDate(r.returned_at) : "—"}
                   </div>
-                </div>
-                <StatusPill row={r} />
-              </li>
-            ))}
-          </ul>
+                </Link>
+              ))}
+            </div>
+
+            {/* 데스크탑: list */}
+            <ul className="hidden md:block bg-paper border border-line rounded-md divide-y divide-line">
+              {history.map((r) => (
+                <li key={r.id} className="p-3 flex items-center gap-3 text-sm">
+                  <CoverThumb book={r.book} />
+                  <div className="flex-1 min-w-0 space-y-0.5">
+                    <div className="font-serif text-base font-bold text-ink truncate">
+                      {r.book?.title ?? "(삭제됨)"}
+                    </div>
+                    <div className="text-xs text-ink-soft">
+                      {r.book?.author}
+                    </div>
+                    <div className="text-xs text-ink-muted">
+                      대여{" "}
+                      <span className="font-mono tabular">
+                        {fmtDate(r.rented_at)}
+                      </span>{" "}
+                      · 반납{" "}
+                      <span className="font-mono tabular">
+                        {r.returned_at ? fmtDate(r.returned_at) : "—"}
+                      </span>
+                    </div>
+                  </div>
+                  <StatusPill row={r} />
+                </li>
+              ))}
+            </ul>
+          </>
         )}
       </section>
 
