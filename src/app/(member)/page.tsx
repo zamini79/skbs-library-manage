@@ -77,7 +77,7 @@ export default async function MemberHomePage({
             TODAY · SK BIOSCIENCE LIBRARY
           </div>
           <h1 className="font-serif text-[23px] font-bold tracking-tight text-ink leading-[1.1] [text-wrap:balance]">
-            오늘, 어떤 책장을 열어볼까요.
+            오늘, 어떤 책장을 열어볼까요?
           </h1>
           <p className="text-xs text-ink-soft">
             총{" "}
@@ -104,7 +104,7 @@ export default async function MemberHomePage({
               SK BIOSCIENCE LIBRARY
             </div>
             <h1 className="font-serif text-2xl xl:text-3xl font-bold tracking-tight text-ink leading-tight">
-              오늘, 어떤 책장을 열어볼까요.
+              오늘, 어떤 책장을 열어볼까요?
             </h1>
             <p className="text-xs text-ink-soft">
               총{" "}
