@@ -125,6 +125,21 @@ export type Database = {
           },
         ]
       }
+      consent_deletions: {
+        Row: {
+          deleted_at: string
+          email: string
+        }
+        Insert: {
+          deleted_at?: string
+          email: string
+        }
+        Update: {
+          deleted_at?: string
+          email?: string
+        }
+        Relationships: []
+      }
       mileage_history: {
         Row: {
           created_at: string
@@ -240,6 +255,7 @@ export type Database = {
       }
       users: {
         Row: {
+          consent_given_at: string
           created_at: string
           department: string
           email: string
@@ -251,6 +267,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          consent_given_at?: string
           created_at?: string
           department: string
           email: string
@@ -262,6 +279,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          consent_given_at?: string
           created_at?: string
           department?: string
           email?: string

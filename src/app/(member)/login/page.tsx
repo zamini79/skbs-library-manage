@@ -13,15 +13,24 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = safeRedirect(searchParams.get("redirect"), "/");
+  const reason = searchParams.get("reason");
+  const reset = searchParams.get("reset");
+  const prefillEmail = searchParams.get("email") ?? "";
 
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(prefillEmail);
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [deletedNotice, setDeletedNotice] = useState<boolean>(
+    reason === "consent_expired",
+  );
+  const [resetNotice, setResetNotice] = useState<boolean>(reset === "ok");
   const [loading, setLoading] = useState(false);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
+    setDeletedNotice(false);
+    setResetNotice(false);
     setLoading(true);
 
     try {
@@ -31,11 +40,26 @@ function LoginForm() {
         password,
       });
       if (signinErr) {
-        setError(
-          signinErr.message === "Invalid login credentials"
-            ? "이메일 또는 비밀번호가 올바르지 않습니다."
-            : signinErr.message,
-        );
+        if (signinErr.message === "Invalid login credentials") {
+          // 동의 만료로 삭제된 이메일인지 tombstone 확인
+          try {
+            const res = await fetch("/api/consent/check-deleted", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email }),
+            });
+            const json = await res.json();
+            if (json?.deleted) {
+              setDeletedNotice(true);
+              return;
+            }
+          } catch {
+            // tombstone 확인 실패 시 일반 에러 메시지로 폴백
+          }
+          setError("이메일 또는 비밀번호가 올바르지 않습니다.");
+        } else {
+          setError(signinErr.message);
+        }
         return;
       }
       router.replace(redirectTo);
@@ -49,6 +73,30 @@ function LoginForm() {
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
+      {resetNotice && (
+        <div className="text-sm bg-ok-soft border border-ok-border text-ok px-3 py-2 rounded-md">
+          비밀번호가 변경되었습니다. 새 비밀번호로 로그인해주세요.
+        </div>
+      )}
+
+      {deletedNotice && (
+        <div className="text-sm bg-busy-soft border border-busy-border text-busy px-3 py-2 rounded-md space-y-1">
+          <div className="font-semibold">
+            개인정보 보유 기간이 만료되어 회원 정보가 삭제되었습니다.
+          </div>
+          <div className="text-xs text-ink-soft">
+            서비스를 계속 이용하시려면 재가입과 함께 개인정보 수집·이용에 다시
+            동의해주세요.{" "}
+            <Link
+              href="/signup"
+              className="text-library-accent underline font-medium"
+            >
+              회원가입 페이지로 이동
+            </Link>
+          </div>
+        </div>
+      )}
+
       <div className="space-y-2">
         <Label htmlFor="email">이메일</Label>
         <Input
@@ -62,7 +110,15 @@ function LoginForm() {
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="password">비밀번호</Label>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="password">비밀번호</Label>
+          <Link
+            href={`/reset-password${email ? `?email=${encodeURIComponent(email)}` : ""}`}
+            className="text-xs text-library-accent hover:underline"
+          >
+            비밀번호를 잊으셨나요?
+          </Link>
+        </div>
         <Input
           id="password"
           type="password"

@@ -24,11 +24,13 @@ export default function SignupPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [alreadyRegistered, setAlreadyRegistered] = useState(false);
   const [loading, setLoading] = useState(false);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
+    setAlreadyRegistered(false);
     setLoading(true);
 
     const parsed = EmailSchema.safeParse({ email });
@@ -39,9 +41,21 @@ export default function SignupPage() {
     }
 
     try {
-      const supabase = createClient();
-      // 6자리 OTP 코드 발송 — magic link 의존성 제거 (디바이스 간 verifier 매칭 이슈 회피).
+      // 1) 가입 여부 사전 체크 — 이미 가입된 이메일이면 OTP 발송 차단
+      const res = await fetch("/api/auth/check-exists", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: parsed.data.email }),
+      });
+      const json = await res.json();
+      if (json?.exists) {
+        setAlreadyRegistered(true);
+        return;
+      }
+
+      // 2) 6자리 OTP 코드 발송 — magic link 의존성 제거 (디바이스 간 verifier 매칭 이슈 회피).
       // shouldCreateUser: true 로 신규 사용자 자동 생성.
+      const supabase = createClient();
       const { error: otpErr } = await supabase.auth.signInWithOtp({
         email: parsed.data.email,
         options: { shouldCreateUser: true },
@@ -83,11 +97,31 @@ export default function SignupPage() {
             autoComplete="email"
             required
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (alreadyRegistered) setAlreadyRegistered(false);
+            }}
             placeholder={`name${RENTAL_POLICY.EMAIL_DOMAIN}`}
             disabled={loading}
           />
         </div>
+
+        {alreadyRegistered && (
+          <div className="text-sm bg-busy-soft border border-busy-border text-busy px-3 py-2 rounded-md space-y-1">
+            <div className="font-semibold">
+              이미 가입된 이메일입니다.
+            </div>
+            <div className="text-xs text-ink-soft">
+              로그인 페이지로 이동하여 로그인해주세요.{" "}
+              <Link
+                href={`/login?email=${encodeURIComponent(email)}`}
+                className="text-library-accent underline font-medium"
+              >
+                로그인 페이지로 이동
+              </Link>
+            </div>
+          </div>
+        )}
 
         {error && (
           <div className="text-sm text-busy bg-busy-soft border border-busy-border px-3 py-2 rounded-md">
@@ -95,8 +129,12 @@ export default function SignupPage() {
           </div>
         )}
 
-        <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "발송 중..." : "인증 코드 받기"}
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={loading || alreadyRegistered}
+        >
+          {loading ? "확인 중..." : "인증 코드 받기"}
         </Button>
 
         <p className="text-xs text-ink-muted text-center">

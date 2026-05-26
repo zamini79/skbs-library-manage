@@ -3,10 +3,12 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
+import { Eye, EyeOff } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { PrivacyConsentTerms } from "@/components/member/PrivacyConsentTerms";
 
 const ProfileSchema = z.object({
   password: z
@@ -31,10 +33,13 @@ export function SignupCompleteForm({
   const router = useRouter();
   const [form, setForm] = useState({
     password: "",
+    passwordConfirm: "",
     employee_no: "",
     name: "",
     department: "",
   });
+  const [showPwd, setShowPwd] = useState(false);
+  const [showPwdConfirm, setShowPwdConfirm] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -50,6 +55,12 @@ export function SignupCompleteForm({
 
     if (!agreed) {
       setError("개인정보 수집·이용에 동의해주세요.");
+      setLoading(false);
+      return;
+    }
+
+    if (form.password !== form.passwordConfirm) {
+      setError("두 비밀번호가 일치하지 않습니다.");
       setLoading(false);
       return;
     }
@@ -80,6 +91,7 @@ export function SignupCompleteForm({
         employee_no: parsed.data.employee_no,
         name: parsed.data.name,
         department: parsed.data.department,
+        consent_given_at: new Date().toISOString(),
       });
       if (insertErr) {
         if (insertErr.code === "23505") {
@@ -111,35 +123,96 @@ export function SignupCompleteForm({
 
       <div className="space-y-2">
         <Label htmlFor="password">비밀번호</Label>
-        <Input
-          id="password"
-          type="password"
-          autoComplete="new-password"
-          required
-          minLength={6}
-          value={form.password}
-          onChange={(e) => update("password", e.target.value)}
-          placeholder="6자 이상"
-          disabled={loading}
-        />
+        <div className="relative">
+          <Input
+            id="password"
+            type={showPwd ? "text" : "password"}
+            autoComplete="new-password"
+            required
+            value={form.password}
+            onChange={(e) => update("password", e.target.value)}
+            placeholder="영문·숫자·특수문자 포함 8자 이상"
+            disabled={loading}
+            className="pr-10"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPwd((v) => !v)}
+            aria-label={showPwd ? "비밀번호 숨기기" : "비밀번호 표시"}
+            aria-pressed={showPwd}
+            tabIndex={-1}
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-ink-muted hover:text-ink"
+          >
+            {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="password-confirm">비밀번호 확인</Label>
+        <div className="relative">
+          <Input
+            id="password-confirm"
+            type={showPwdConfirm ? "text" : "password"}
+            autoComplete="new-password"
+            required
+            value={form.passwordConfirm}
+            onChange={(e) => update("passwordConfirm", e.target.value)}
+            placeholder="같은 비밀번호를 한 번 더 입력"
+            disabled={loading}
+            className="pr-10"
+            aria-invalid={
+              form.passwordConfirm.length > 0 &&
+              form.passwordConfirm !== form.password
+            }
+          />
+          <button
+            type="button"
+            onClick={() => setShowPwdConfirm((v) => !v)}
+            aria-label={
+              showPwdConfirm ? "비밀번호 숨기기" : "비밀번호 표시"
+            }
+            aria-pressed={showPwdConfirm}
+            tabIndex={-1}
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-ink-muted hover:text-ink"
+          >
+            {showPwdConfirm ? (
+              <EyeOff className="h-4 w-4" />
+            ) : (
+              <Eye className="h-4 w-4" />
+            )}
+          </button>
+        </div>
+        {form.passwordConfirm.length > 0 &&
+          form.passwordConfirm !== form.password && (
+            <p className="text-xs text-busy">
+              두 비밀번호가 일치하지 않습니다.
+            </p>
+          )}
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label htmlFor="employee_no">사번</Label>
+          <Label htmlFor="employee_no">
+            사번 <span className="text-busy" aria-hidden="true">*</span>
+          </Label>
           <Input
             id="employee_no"
             required
+            aria-required="true"
             value={form.employee_no}
             onChange={(e) => update("employee_no", e.target.value)}
             disabled={loading}
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="name">이름</Label>
+          <Label htmlFor="name">
+            이름 <span className="text-busy" aria-hidden="true">*</span>
+          </Label>
           <Input
             id="name"
             required
+            aria-required="true"
             value={form.name}
             onChange={(e) => update("name", e.target.value)}
             disabled={loading}
@@ -148,10 +221,13 @@ export function SignupCompleteForm({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="department">부서</Label>
+        <Label htmlFor="department">
+          부서 <span className="text-busy" aria-hidden="true">*</span>
+        </Label>
         <Input
           id="department"
           required
+          aria-required="true"
           value={form.department}
           onChange={(e) => update("department", e.target.value)}
           placeholder="예: 정보보안팀"
@@ -164,77 +240,7 @@ export function SignupCompleteForm({
           개인정보 수집·이용 동의{" "}
           <span className="text-busy text-xs font-normal">(필수)</span>
         </div>
-        <div className="border border-line rounded-md bg-paper-warm max-h-56 overflow-y-auto p-4 text-xs leading-relaxed text-ink space-y-3">
-          <p className="text-ink-soft">
-            SK바이오사이언스 사내 도서관(이하 &quot;도서관&quot;)은 회원 가입 및
-            서비스 제공을 위하여 아래와 같이 개인정보를 수집·이용합니다. 내용을
-            확인하신 후 동의 여부를 선택하여 주시기 바랍니다.
-          </p>
-
-          <div className="space-y-1.5">
-            <div className="font-semibold text-ink">수집·이용 내역</div>
-            <table className="w-full border-collapse text-[11px]">
-              <tbody>
-                <tr className="border-b border-line">
-                  <th className="text-left align-top py-1.5 pr-2 font-medium w-24 text-ink">
-                    수집 목적
-                  </th>
-                  <td className="py-1.5 text-ink-soft">
-                    사내 도서관 회원 등록, 도서 대출·반납 이력 관리, 회원 식별
-                    및 본인 확인
-                  </td>
-                </tr>
-                <tr className="border-b border-line">
-                  <th className="text-left align-top py-1.5 pr-2 font-medium text-ink">
-                    수집 항목
-                  </th>
-                  <td className="py-1.5 text-ink-soft">이름, 사번, 부서명</td>
-                </tr>
-                <tr className="border-b border-line">
-                  <th className="text-left align-top py-1.5 pr-2 font-medium text-ink">
-                    보유·이용 기간
-                  </th>
-                  <td className="py-1.5 text-ink-soft">
-                    동의일로부터 1년 (보유 기간 만료 전 회원 탈퇴 또는 동의
-                    철회 시 즉시 파기)
-                  </td>
-                </tr>
-                <tr>
-                  <th className="text-left align-top py-1.5 pr-2 font-medium text-ink">
-                    파기 방법
-                  </th>
-                  <td className="py-1.5 text-ink-soft">
-                    전자적 파일 형태의 정보는 복구 불가능한 방법으로 영구 삭제
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div className="space-y-1">
-            <div className="font-semibold text-ink">
-              동의 거부 권리 및 불이익 안내
-            </div>
-            <p className="text-ink-soft">
-              귀하는 개인정보 수집·이용에 대한 동의를 거부할 권리가 있습니다.
-              다만, 동의를 거부하실 경우 사내 도서관 회원 가입 및 도서 대출
-              서비스 이용이 제한될 수 있습니다.
-            </p>
-          </div>
-
-          <div className="space-y-1">
-            <div className="font-semibold text-ink">개인정보 처리자</div>
-            <ul className="text-ink-soft list-disc pl-4 space-y-0.5">
-              <li>기관명: SK바이오사이언스 주식회사</li>
-              <li>서비스명: SK바이오사이언스 사내 도서관</li>
-              <li>문의처: 사내 도서관 담당 부서</li>
-            </ul>
-          </div>
-
-          <p className="text-[10px] text-ink-muted pt-2 border-t border-line">
-            본 약관은 「개인정보 보호법」 제15조 및 제22조에 따라 작성되었습니다.
-          </p>
-        </div>
+        <PrivacyConsentTerms />
 
         <label className="flex items-start gap-2 cursor-pointer pt-1">
           <input
