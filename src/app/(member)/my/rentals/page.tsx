@@ -140,12 +140,11 @@ export default async function MyRentalsPage() {
   const activeRentals: RentalRow[] = (activeRes.data ?? []) as any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const history: RentalRow[] = (historyRes.data ?? []) as any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const pendingRequests: Array<{
+  const pendingRequests = (pendingRes.data ?? []) as unknown as Array<{
     id: string;
     requested_at: string;
     book: RentalRow["book"];
-  }> = (pendingRes.data ?? []) as any;
+  }>;
   const activeCount = activeRentals.length;
   const monthlyCount = monthlyRes.count ?? 0;
   const monthlyRemaining = Math.max(
