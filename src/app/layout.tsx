@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Noto_Sans_KR, Noto_Serif_KR, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -27,6 +27,15 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "SK Bioscience 사내 도서관",
   description: "구성원 도서 대여 시스템",
+};
+
+// iOS Safari가 입력 focus 시 자동 확대 후 페이지 이동 시 확대 상태가 남는 문제 방지.
+// maximumScale=1 로 사용자·시스템 zoom 모두 봉인.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
