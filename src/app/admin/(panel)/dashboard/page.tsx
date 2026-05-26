@@ -1,4 +1,6 @@
 // 관리자 대시보드 — Phase 1 가이드 Day 7
+import Link from "next/link";
+import { Bell } from "lucide-react";
 import { requireAny, adminRoleLabel } from "@/lib/auth/admin-auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { KpiCard } from "@/components/admin/dashboard/KpiCard";
@@ -24,6 +26,7 @@ export default async function AdminDashboardPage() {
     allRentalsRes,
     recentRes,
     overdueListRes,
+    pendingRequestsRes,
   ] = await Promise.all([
     supabase
       .from("books")
@@ -63,7 +66,13 @@ export default async function AdminDashboardPage() {
       .eq("status", "overdue")
       .order("due_date", { ascending: true })
       .limit(5),
+    supabase
+      .from("rental_requests")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "pending"),
   ]);
+
+  const pendingCount = pendingRequestsRes.count ?? 0;
 
   // TOP10 집계 (Node 측)
   const userCounts = new Map<string, { label: string; count: number }>();
@@ -96,6 +105,30 @@ export default async function AdminDashboardPage() {
           {admin.name} ({adminRoleLabel(admin.role)})
         </p>
       </header>
+
+      {pendingCount > 0 && (
+        <Link
+          href="/admin/rentals/new"
+          className="block bg-card border border-primary border-l-[4px] rounded-md p-4 hover:bg-muted/40 transition-colors"
+        >
+          <div className="flex items-center gap-4">
+            <Bell className="h-6 w-6 text-primary shrink-0" />
+            <div className="flex-1">
+              <div className="font-semibold">
+                새 대출 신청{" "}
+                <span className="font-mono">{pendingCount}</span>건이 처리
+                대기 중입니다.
+              </div>
+              <div className="text-sm text-muted-foreground">
+                대여 등록 페이지에서 승인 또는 반려를 처리해주세요.
+              </div>
+            </div>
+            <span className="text-sm font-medium text-primary shrink-0">
+              처리하기 →
+            </span>
+          </div>
+        </Link>
+      )}
 
       <section className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <KpiCard label="전체 도서" value={booksRes.count ?? 0} variant="accent" />

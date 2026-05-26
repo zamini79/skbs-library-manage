@@ -1,11 +1,20 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { BookCover } from "@/components/member/BookCover";
+import { RequestBookButton } from "@/components/member/RequestBookButton";
 import { cn } from "@/lib/utils";
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+type ButtonState =
+  | "not-authed"
+  | "available"
+  | "requested-by-self"
+  | "requested-by-other"
+  | "unavailable";
 
 export default async function BookDetailPage({
   params,
@@ -28,12 +37,58 @@ export default async function BookDetailPage({
     notFound();
   }
 
-  const { count: rentalCount } = await supabase
-    .from("rentals")
-    .select("*", { count: "exact", head: true })
-    .eq("book_id", book.id);
+  const [{ count: rentalCount }, { data: { user } }] = await Promise.all([
+    supabase
+      .from("rentals")
+      .select("*", { count: "exact", head: true })
+      .eq("book_id", book.id),
+    supabase.auth.getUser(),
+  ]);
 
+  // 책별 pending 요청 조회 (service_role)
+  const admin = createAdminClient();
+  const { data: pending } = await admin
+    .from("rental_requests")
+    .select("id, user_id")
+    .eq("book_id", book.id)
+    .eq("status", "pending")
+    .maybeSingle();
+
+  const hasPending = !!pending;
+  const myPendingRequestId =
+    pending && user && pending.user_id === user.id ? pending.id : null;
   const available = book.available_quantity > 0;
+
+  let buttonState: ButtonState;
+  if (!user) buttonState = "not-authed";
+  else if (myPendingRequestId) buttonState = "requested-by-self";
+  else if (hasPending) buttonState = "requested-by-other";
+  else if (!available) buttonState = "unavailable";
+  else buttonState = "available";
+
+  const statusLabel = hasPending
+    ? "대출 승인 대기중"
+    : available
+      ? "대출 가능"
+      : "대출중";
+  const statusTone: "ok" | "warn" | "busy" = hasPending
+    ? "warn"
+    : available
+      ? "ok"
+      : "busy";
+
+  const statusStripCls = cn(
+    "border rounded-md px-4 py-3 flex items-center gap-3 text-sm",
+    statusTone === "ok" && "bg-ok-soft border-ok-border text-ok",
+    statusTone === "warn" && "bg-busy-soft border-busy-border text-busy",
+    statusTone === "busy" && "bg-busy-soft border-busy-border text-busy",
+  );
+  const statusDotCls = cn(
+    "inline-block w-2 h-2 rounded-full",
+    statusTone === "ok" && "bg-ok",
+    statusTone === "warn" && "bg-busy",
+    statusTone === "busy" && "bg-busy",
+  );
 
   return (
     <>
@@ -66,28 +121,22 @@ export default async function BookDetailPage({
               </div>
             </div>
 
-            {/* 대출 상태 strip */}
-            <div
-              className={cn(
-                "border rounded-md px-4 py-3 flex items-center gap-3 text-sm",
-                available
-                  ? "bg-ok-soft border-ok-border text-ok"
-                  : "bg-busy-soft border-busy-border text-busy",
-              )}
-            >
-              <span
-                className={cn(
-                  "inline-block w-2 h-2 rounded-full",
-                  available ? "bg-ok" : "bg-busy",
-                )}
-                aria-hidden="true"
+            {/* 대출 상태 + 신청 버튼 — 가운데 정렬 */}
+            <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+              <div className={statusStripCls + " w-full sm:w-auto"}>
+                <span className={statusDotCls} aria-hidden="true" />
+                <span className="font-medium">{statusLabel}</span>
+                <span className="ml-auto sm:ml-3 font-mono tabular text-ink-soft">
+                  {book.available_quantity} / {book.total_quantity}권
+                </span>
+              </div>
+              <RequestBookButton
+                bookId={book.id}
+                bookTitle={book.title}
+                state={buttonState}
+                myPendingRequestId={myPendingRequestId}
+                variant="desktop"
               />
-              <span className="font-medium">
-                {available ? "대출 가능" : "대출중"}
-              </span>
-              <span className="ml-auto font-mono tabular text-ink-soft">
-                {book.available_quantity} / {book.total_quantity}권
-              </span>
             </div>
 
             {/* 서지 정보 */}
@@ -146,24 +195,37 @@ export default async function BookDetailPage({
               {book.author} · {book.publisher}
             </div>
           </div>
-          <div className="flex justify-center">
+          {/* 대출 상태 + 신청 버튼 — 가운데 정렬, 가로 배치 */}
+          <div className="flex items-center justify-center gap-2 flex-wrap">
             <span
               className={cn(
                 "inline-flex items-center gap-1.5 px-3 py-1 rounded-pill text-[12px] font-semibold",
-                available ? "bg-ok-soft text-ok" : "bg-busy-soft text-busy",
+                statusTone === "ok" && "bg-ok-soft text-ok",
+                statusTone === "warn" && "bg-busy-soft text-busy",
+                statusTone === "busy" && "bg-busy-soft text-busy",
               )}
             >
               <span
                 className={cn(
                   "inline-block w-1.5 h-1.5 rounded-full",
-                  available ? "bg-ok" : "bg-busy",
+                  statusTone === "ok" && "bg-ok",
+                  statusTone !== "ok" && "bg-busy",
                 )}
                 aria-hidden="true"
               />
-              {available
-                ? `대출 가능 (${book.available_quantity}/${book.total_quantity}권)`
-                : "대출중"}
+              {hasPending
+                ? "대출 승인 대기중"
+                : available
+                  ? `대출 가능 (${book.available_quantity}/${book.total_quantity}권)`
+                  : "대출중"}
             </span>
+            <RequestBookButton
+              bookId={book.id}
+              bookTitle={book.title}
+              state={buttonState}
+              myPendingRequestId={myPendingRequestId}
+              variant="mobile"
+            />
           </div>
         </div>
 

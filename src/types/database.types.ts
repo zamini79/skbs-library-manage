@@ -182,6 +182,77 @@ export type Database = {
           },
         ]
       }
+      rental_requests: {
+        Row: {
+          book_id: string
+          created_at: string
+          id: string
+          processed_at: string | null
+          processed_by: string | null
+          reject_reason: string | null
+          rental_id: string | null
+          requested_at: string
+          status: Database["public"]["Enums"]["rental_request_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          book_id: string
+          created_at?: string
+          id?: string
+          processed_at?: string | null
+          processed_by?: string | null
+          reject_reason?: string | null
+          rental_id?: string | null
+          requested_at?: string
+          status?: Database["public"]["Enums"]["rental_request_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          book_id?: string
+          created_at?: string
+          id?: string
+          processed_at?: string | null
+          processed_by?: string | null
+          reject_reason?: string | null
+          rental_id?: string | null
+          requested_at?: string
+          status?: Database["public"]["Enums"]["rental_request_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rental_requests_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rental_requests_processed_by_fkey"
+            columns: ["processed_by"]
+            isOneToOne: false
+            referencedRelation: "admins"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rental_requests_rental_id_fkey"
+            columns: ["rental_id"]
+            isOneToOne: false
+            referencedRelation: "rentals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rental_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rentals: {
         Row: {
           admin_id: string
@@ -301,6 +372,7 @@ export type Database = {
         Args: { p_book_id: string; p_user_id: string }
         Returns: Json
       }
+      is_book_requested: { Args: { p_book_id: string }; Returns: boolean }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
       update_overdue_rentals: { Args: never; Returns: number }
@@ -316,6 +388,7 @@ export type Database = {
       book_status: "active" | "disposed"
       disposal_reason: "lost" | "damaged" | "outdated" | "other"
       mileage_reason: "return_on_time" | "return_overdue"
+      rental_request_status: "pending" | "approved" | "rejected"
       rental_status: "active" | "returned" | "overdue"
     }
     CompositeTypes: {
@@ -455,6 +528,7 @@ export const Constants = {
       book_status: ["active", "disposed"],
       disposal_reason: ["lost", "damaged", "outdated", "other"],
       mileage_reason: ["return_on_time", "return_overdue"],
+      rental_request_status: ["pending", "approved", "rejected"],
       rental_status: ["active", "returned", "overdue"],
     },
   },

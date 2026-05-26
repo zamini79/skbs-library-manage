@@ -98,7 +98,7 @@ export default async function MyRentalsPage() {
     return d.toISOString();
   })();
 
-  const [activeRes, historyRes, monthlyRes] = await Promise.all([
+  const [activeRes, historyRes, monthlyRes, pendingRes] = await Promise.all([
     supabase
       .from("rentals")
       .select(
@@ -123,12 +123,27 @@ export default async function MyRentalsPage() {
       .select("id", { count: "exact", head: true })
       .eq("user_id", user.id)
       .gte("rented_at", startOfMonth),
+    supabase
+      .from("rental_requests")
+      .select(
+        `id, requested_at,
+         book:books!book_id (id, title, author, category, cover_url, cover_url_external)`,
+      )
+      .eq("user_id", user.id)
+      .eq("status", "pending")
+      .order("requested_at", { ascending: false }),
   ]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const activeRentals: RentalRow[] = (activeRes.data ?? []) as any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const history: RentalRow[] = (historyRes.data ?? []) as any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const pendingRequests: Array<{
+    id: string;
+    requested_at: string;
+    book: RentalRow["book"];
+  }> = (pendingRes.data ?? []) as any;
   const activeCount = activeRentals.length;
   const monthlyCount = monthlyRes.count ?? 0;
   const monthlyRemaining = Math.max(
@@ -201,6 +216,54 @@ export default async function MyRentalsPage() {
           </div>
         </div>
       </section>
+
+      {/* 대출 신청 대기 */}
+      {pendingRequests.length > 0 && (
+        <section className="space-y-3">
+          <div className="flex items-baseline justify-between">
+            <h2 className="font-serif text-xl font-bold text-ink">
+              대출 신청 대기
+            </h2>
+            <span className="text-xs text-ink-muted">
+              관리자 승인 대기 · {pendingRequests.length}건
+            </span>
+          </div>
+          <ul className="bg-paper border border-line rounded-md divide-y divide-line">
+            {pendingRequests.map((req) => (
+              <li key={req.id} className="p-4 flex items-center gap-4">
+                <CoverThumb book={req.book} />
+                <div className="flex-1 min-w-0 space-y-1">
+                  <div className="font-serif text-base font-bold text-ink truncate">
+                    {req.book?.title ?? "(삭제됨)"}
+                  </div>
+                  <div className="text-xs text-ink-soft">
+                    {req.book?.author}
+                  </div>
+                  <div className="text-xs text-ink-muted">
+                    신청{" "}
+                    <span className="font-mono tabular">
+                      {fmtDate(req.requested_at)}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex flex-col items-end gap-1.5">
+                  <span className="inline-block px-2.5 py-1 rounded-pill text-xs font-bold tracking-wide whitespace-nowrap bg-busy-soft text-busy">
+                    승인 대기
+                  </span>
+                  {req.book && (
+                    <Link
+                      href={`/books/${req.book.id}`}
+                      className="text-xs text-library-accent hover:underline"
+                    >
+                      상세 / 취소
+                    </Link>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {/* 현재 대여 중 */}
       <section className="space-y-3">
