@@ -17,6 +17,7 @@ function LoginForm() {
 
   const [loginId, setLoginId] = useState("");
   const [password, setPassword] = useState("");
+  const [remember, setRemember] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -29,7 +30,7 @@ function LoginForm() {
       const res = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ login_id: loginId, password }),
+        body: JSON.stringify({ login_id: loginId, password, remember }),
       });
       const data = (await res.json().catch(() => ({}))) as {
         ok?: boolean;
@@ -80,6 +81,17 @@ function LoginForm() {
           disabled={loading}
         />
       </div>
+
+      <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+        <input
+          type="checkbox"
+          checked={remember}
+          onChange={(e) => setRemember(e.target.checked)}
+          disabled={loading}
+          className="h-4 w-4 cursor-pointer"
+        />
+        <span>자동 로그인</span>
+      </label>
 
       {error && (
         <div className="text-sm text-destructive bg-destructive-bg px-3 py-2 rounded">

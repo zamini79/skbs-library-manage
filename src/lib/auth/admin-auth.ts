@@ -11,7 +11,8 @@ import type { Database } from "@/types/database.types";
 import { ADMIN_ROLES, type AdminRole } from "@/lib/policies";
 
 export const ADMIN_COOKIE_NAME = "admin_session";
-const TOKEN_MAX_AGE_SEC = 60 * 60 * 8; // 8시간
+const TOKEN_MAX_AGE_SEC = 60 * 60 * 8; // 8시간 (자동 로그인 비활성)
+const TOKEN_REMEMBER_MAX_AGE_SEC = 60 * 60 * 24 * 180; // 6개월 (자동 로그인 활성)
 const TOKEN_ISSUER = "skbs-library";
 const TOKEN_AUDIENCE = "skbs-admin";
 
@@ -38,11 +39,13 @@ function isAdminRole(v: unknown): v is AdminRole {
 
 export async function signAdminToken(
   payload: AdminTokenPayload,
+  rememberMe = false,
 ): Promise<string> {
+  const maxAge = rememberMe ? TOKEN_REMEMBER_MAX_AGE_SEC : TOKEN_MAX_AGE_SEC;
   return new SignJWT(payload as unknown as JWTPayload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
-    .setExpirationTime(`${TOKEN_MAX_AGE_SEC}s`)
+    .setExpirationTime(`${maxAge}s`)
     .setIssuer(TOKEN_ISSUER)
     .setAudience(TOKEN_AUDIENCE)
     .sign(getSecret());
@@ -75,13 +78,15 @@ export async function verifyAdminToken(
   }
 }
 
-export async function setAdminCookie(token: string) {
+export async function setAdminCookie(token: string, rememberMe = false) {
   cookies().set(ADMIN_COOKIE_NAME, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: TOKEN_MAX_AGE_SEC,
+    // 자동 로그인: 6개월 maxAge / 미체크: 세션 쿠키 (브라우저 종료 시 소멸).
+    // 세션 쿠키는 maxAge 를 생략해야 하므로 조건부 spread 사용.
+    ...(rememberMe ? { maxAge: TOKEN_REMEMBER_MAX_AGE_SEC } : {}),
   });
 }
 

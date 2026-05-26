@@ -27,9 +27,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "INVALID_BODY" }, { status: 400 });
   }
 
-  const { login_id, password } = (body ?? {}) as {
+  const { login_id, password, remember } = (body ?? {}) as {
     login_id?: unknown;
     password?: unknown;
+    remember?: unknown;
   };
 
   if (typeof login_id !== "string" || typeof password !== "string") {
@@ -38,6 +39,7 @@ export async function POST(req: Request) {
       { status: 400 },
     );
   }
+  const rememberMe = remember === true;
 
   const supabase = createAdminClient();
 
@@ -81,8 +83,8 @@ export async function POST(req: Request) {
     role: admin.role,
     name: admin.name,
   };
-  const token = await signAdminToken(payload);
-  await setAdminCookie(token);
+  const token = await signAdminToken(payload, rememberMe);
+  await setAdminCookie(token, rememberMe);
 
   return NextResponse.json({ ok: true, role: admin.role, name: admin.name });
 }
