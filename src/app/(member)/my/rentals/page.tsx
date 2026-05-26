@@ -25,9 +25,9 @@ type RentalRow = {
 
 function fmtDate(iso: string) {
   return new Date(iso).toLocaleDateString("ko-KR", {
-    year: "2-digit",
-    month: "2-digit",
-    day: "2-digit",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
 }
 
@@ -291,24 +291,32 @@ export default async function MyRentalsPage() {
                     </div>
                     <div
                       className={cn(
-                        "text-xs",
+                        "text-xs space-y-0.5",
                         soon ? "text-busy" : "text-ink-muted",
                       )}
                     >
-                      <span>대여 {fmtDate(r.rented_at)}</span>
-                      <span className="hidden md:inline"> · </span>
-                      <span className="block md:inline">
-                        반납기한{" "}
+                      <div className="flex items-center gap-2">
+                        <span className="inline-block w-14 shrink-0">
+                          대여날짜
+                        </span>
+                        <span className="font-mono tabular">
+                          {fmtDate(r.rented_at)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="inline-block w-14 shrink-0">
+                          반납기한
+                        </span>
                         <span className="font-mono tabular">
                           {fmtDate(r.due_date)}
                         </span>
-                      </span>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex flex-col items-end gap-1.5">
+                  <div className="flex flex-col items-center gap-1.5 shrink-0">
                     <StatusPill row={r} />
                     {r.return_requested_at ? (
-                      <div className="flex items-center gap-1.5">
+                      <>
                         <span className="px-2 py-0.5 rounded-pill text-[10px] font-bold bg-busy-soft text-busy whitespace-nowrap">
                           반납 대기
                         </span>
@@ -317,7 +325,7 @@ export default async function MyRentalsPage() {
                           bookTitle={r.book?.title ?? ""}
                           requested
                         />
-                      </div>
+                      </>
                     ) : (
                       <ReturnRequestButton
                         rentalId={r.id}
