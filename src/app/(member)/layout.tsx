@@ -3,7 +3,6 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { MemberHeader } from "@/components/member/MemberHeader";
 import { MobileTopBar } from "@/components/member/MobileTopBar";
-import { MobileBottomNav } from "@/components/member/MobileBottomNav";
 import { ConsentExpiryBanner } from "@/components/member/ConsentExpiryBanner";
 import {
   CONSENT_WARNING_DAYS,
@@ -74,11 +73,11 @@ export default async function MemberLayout({
         <MemberHeader name={name} />
       </div>
       {/* 모바일 상단 바 (md 미만) */}
-      <MobileTopBar loggedIn={loggedIn} />
+      <MobileTopBar loggedIn={loggedIn} name={name} />
 
       {daysLeft !== null && <ConsentExpiryBanner daysLeft={daysLeft} />}
 
-      <main className="flex-1 mx-auto w-full max-w-[1720px] px-4 md:px-8 pt-6 pb-28 md:pt-4 md:pb-6">
+      <main className="flex-1 mx-auto w-full max-w-[1720px] px-4 md:px-8 pt-6 pb-8 md:pt-4 md:pb-6">
         {children}
       </main>
 
@@ -88,8 +87,6 @@ export default async function MemberLayout({
           © SK Bioscience · 사내 도서 관리 시스템
         </div>
       </footer>
-      {/* 모바일 하단 탭바 */}
-      <MobileBottomNav loggedIn={loggedIn} />
     </div>
   );
 }
