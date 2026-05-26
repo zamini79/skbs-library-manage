@@ -3,6 +3,7 @@
 import { Suspense, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { safeRedirect } from "@/lib/safe-redirect";
 import { Input } from "@/components/ui/input";
@@ -19,6 +20,7 @@ function LoginForm() {
 
   const [email, setEmail] = useState(prefillEmail);
   const [password, setPassword] = useState("");
+  const [showPwd, setShowPwd] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [deletedNotice, setDeletedNotice] = useState<boolean>(
     reason === "consent_expired",
@@ -119,15 +121,32 @@ function LoginForm() {
             비밀번호를 잊으셨나요?
           </Link>
         </div>
-        <Input
-          id="password"
-          type="password"
-          autoComplete="current-password"
-          required
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          disabled={loading}
-        />
+        <div className="relative">
+          <Input
+            id="password"
+            type={showPwd ? "text" : "password"}
+            autoComplete="current-password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={loading}
+            className="pr-10"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPwd((v) => !v)}
+            aria-label={showPwd ? "비밀번호 숨기기" : "비밀번호 표시"}
+            aria-pressed={showPwd}
+            tabIndex={-1}
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-ink-muted hover:text-ink"
+          >
+            {showPwd ? (
+              <EyeOff className="h-4 w-4" />
+            ) : (
+              <Eye className="h-4 w-4" />
+            )}
+          </button>
+        </div>
       </div>
 
       {error && (
