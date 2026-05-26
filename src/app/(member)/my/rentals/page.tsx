@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { RENTAL_POLICY } from "@/lib/policies";
 import { BookCover } from "@/components/member/BookCover";
+import { ReturnRequestButton } from "@/components/member/ReturnRequestButton";
 import { cn } from "@/lib/utils";
 import type { Database } from "@/types/database.types";
 
@@ -15,6 +16,7 @@ type RentalRow = {
   rented_at: string;
   due_date: string;
   returned_at: string | null;
+  return_requested_at: string | null;
   book: Pick<
     BookRow,
     "id" | "title" | "author" | "category" | "cover_url" | "cover_url_external"
@@ -102,7 +104,7 @@ export default async function MyRentalsPage() {
     supabase
       .from("rentals")
       .select(
-        `id, status, rented_at, due_date, returned_at,
+        `id, status, rented_at, due_date, returned_at, return_requested_at,
          book:books!book_id (id, title, author, category, cover_url, cover_url_external)`,
       )
       .eq("user_id", user.id)
@@ -111,7 +113,7 @@ export default async function MyRentalsPage() {
     supabase
       .from("rentals")
       .select(
-        `id, status, rented_at, due_date, returned_at,
+        `id, status, rented_at, due_date, returned_at, return_requested_at,
          book:books!book_id (id, title, author, category, cover_url, cover_url_external)`,
       )
       .eq("user_id", user.id)
@@ -300,7 +302,26 @@ export default async function MyRentalsPage() {
                       </span>
                     </div>
                   </div>
-                  <StatusPill row={r} />
+                  <div className="flex flex-col items-end gap-1.5">
+                    <StatusPill row={r} />
+                    {r.return_requested_at ? (
+                      <div className="flex items-center gap-1.5">
+                        <span className="px-2 py-0.5 rounded-pill text-[10px] font-bold bg-busy-soft text-busy whitespace-nowrap">
+                          반납 대기
+                        </span>
+                        <ReturnRequestButton
+                          rentalId={r.id}
+                          bookTitle={r.book?.title ?? ""}
+                          requested
+                        />
+                      </div>
+                    ) : (
+                      <ReturnRequestButton
+                        rentalId={r.id}
+                        bookTitle={r.book?.title ?? ""}
+                      />
+                    )}
+                  </div>
                 </li>
               );
             })}

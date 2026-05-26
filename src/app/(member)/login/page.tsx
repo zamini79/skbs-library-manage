@@ -21,11 +21,15 @@ function LoginForm() {
   const [email, setEmail] = useState(prefillEmail);
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
+  const [remember, setRemember] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletedNotice, setDeletedNotice] = useState<boolean>(
     reason === "consent_expired",
   );
   const [resetNotice, setResetNotice] = useState<boolean>(reset === "ok");
+  const [autoLoginExpiredNotice, setAutoLoginExpiredNotice] = useState<boolean>(
+    reason === "auto_login_expired",
+  );
   const [loading, setLoading] = useState(false);
 
   async function onSubmit(e: FormEvent) {
@@ -33,6 +37,7 @@ function LoginForm() {
     setError(null);
     setDeletedNotice(false);
     setResetNotice(false);
+    setAutoLoginExpiredNotice(false);
     setLoading(true);
 
     try {
@@ -64,6 +69,13 @@ function LoginForm() {
         }
         return;
       }
+
+      // 자동 로그인 마커 쿠키 — 레이아웃이 이걸로 세션 유지 여부 결정
+      // 체크: Max-Age 6개월 (15552000초), 미체크: 세션 쿠키 (브라우저 닫으면 소멸)
+      const base = "member_remember=1; Path=/; SameSite=Lax";
+      const cookieStr = remember ? `${base}; Max-Age=15552000` : base;
+      document.cookie = cookieStr;
+
       router.replace(redirectTo);
       router.refresh();
     } catch (err) {
@@ -78,6 +90,12 @@ function LoginForm() {
       {resetNotice && (
         <div className="text-sm bg-ok-soft border border-ok-border text-ok px-3 py-2 rounded-md">
           비밀번호가 변경되었습니다. 새 비밀번호로 로그인해주세요.
+        </div>
+      )}
+
+      {autoLoginExpiredNotice && (
+        <div className="text-sm bg-busy-soft border border-busy-border text-busy px-3 py-2 rounded-md">
+          자동 로그인 기간이 만료되었습니다. 다시 로그인해주세요.
         </div>
       )}
 
@@ -148,6 +166,17 @@ function LoginForm() {
           </button>
         </div>
       </div>
+
+      <label className="flex items-center gap-2 text-sm text-ink cursor-pointer select-none">
+        <input
+          type="checkbox"
+          checked={remember}
+          onChange={(e) => setRemember(e.target.checked)}
+          disabled={loading}
+          className="h-4 w-4 rounded border-line cursor-pointer"
+        />
+        <span>자동 로그인</span>
+      </label>
 
       {error && (
         <div className="text-sm text-busy bg-busy-soft border border-busy-border px-3 py-2 rounded-md">

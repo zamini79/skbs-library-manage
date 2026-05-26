@@ -25,6 +25,7 @@ type RentalRow = {
   status: "active" | "overdue" | "returned";
   rented_at: string;
   due_date: string;
+  return_requested_at: string | null;
   book: { id: string; title: string; author: string } | null;
   user: { id: string; name: string; employee_no: string; department: string } | null;
 };
@@ -155,10 +156,23 @@ export function RentalReturnTable({
                     D+{Math.abs(daysUntil(r.due_date))}
                   </TableCell>
                 )}
-                <TableCell>{statusBadge(r.status)}</TableCell>
+                <TableCell>
+                  <div className="flex flex-col gap-1 items-start">
+                    {statusBadge(r.status)}
+                    {r.return_requested_at && (
+                      <span className="text-[10px] font-bold tracking-wide px-1.5 py-0.5 rounded bg-primary/10 text-primary whitespace-nowrap">
+                        반납 요청
+                      </span>
+                    )}
+                  </div>
+                </TableCell>
                 <TableCell className="text-right">
-                  <Button size="sm" onClick={() => openDialog(r)}>
-                    반납
+                  <Button
+                    size="sm"
+                    variant={r.return_requested_at ? "default" : "outline"}
+                    onClick={() => openDialog(r)}
+                  >
+                    {r.return_requested_at ? "반납 확인" : "반납"}
                   </Button>
                 </TableCell>
               </TableRow>

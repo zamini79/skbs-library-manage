@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { MemberHeader } from "@/components/member/MemberHeader";
@@ -19,6 +20,15 @@ export default async function MemberLayout({
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  // 자동 로그인 마커 검증: Supabase 세션이 있는데 member_remember 쿠키가 없다면
+  // (브라우저 재시작으로 세션 쿠키 소멸 또는 6개월 maxAge 만료) 자동 로그아웃.
+  if (user) {
+    const remember = cookies().get("member_remember");
+    if (!remember) {
+      redirect("/api/auth/expire");
+    }
+  }
 
   let name: string | null = null;
   let daysLeft: number | null = null;

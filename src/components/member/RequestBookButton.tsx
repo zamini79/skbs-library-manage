@@ -13,6 +13,39 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
+type Eligibility = {
+  eligible?: boolean;
+  book_available?: boolean;
+  book_active?: boolean;
+  monthly_count?: number;
+  monthly_remaining?: number;
+  current_holding?: number;
+  holding_remaining?: number;
+  overdue_count?: number;
+  has_overdue?: boolean;
+};
+
+function eligibilityReasons(e: Eligibility | null | undefined): string[] {
+  if (!e) return [];
+  const out: string[] = [];
+  if (e.book_active === false) out.push("도서가 폐기·정리되어 대출할 수 없습니다.");
+  if (e.book_available === false)
+    out.push("이 도서는 현재 대출 중이거나 가용 수량이 없습니다.");
+  if (typeof e.monthly_remaining === "number" && e.monthly_remaining <= 0)
+    out.push(
+      `이번 달 대출 한도(2회)를 모두 사용했습니다 (현재 ${e.monthly_count ?? 0}/2회). 다음 달 1일에 초기화됩니다.`,
+    );
+  if (typeof e.holding_remaining === "number" && e.holding_remaining <= 0)
+    out.push(
+      `동시에 보유할 수 있는 도서(2권)를 모두 대출 중입니다 (현재 ${e.current_holding ?? 0}/2권). 먼저 반납해주세요.`,
+    );
+  if (e.has_overdue)
+    out.push(
+      `연체된 대출이 있습니다 (${e.overdue_count ?? 0}건). 반납 후 다시 시도해주세요.`,
+    );
+  return out;
+}
+
 type Variant = "desktop" | "mobile";
 
 export function RequestBookButton({
@@ -38,6 +71,7 @@ export function RequestBookButton({
   const [cancelOpen, setCancelOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [reasons, setReasons] = useState<string[]>([]);
 
   const sizing =
     variant === "mobile"
@@ -82,6 +116,7 @@ export function RequestBookButton({
   async function submitRequest() {
     setLoading(true);
     setError(null);
+    setReasons([]);
     try {
       const res = await fetch("/api/rental-requests", {
         method: "POST",
@@ -90,11 +125,20 @@ export function RequestBookButton({
       });
       const json = await res.json();
       if (!res.ok || !json.ok) {
+        if (json?.error === "NOT_ELIGIBLE") {
+          const list = eligibilityReasons(json.eligibility as Eligibility);
+          if (list.length > 0) {
+            setReasons(list);
+            setError(null);
+          } else {
+            setError("현재 대출 자격을 만족하지 않습니다.");
+          }
+          return;
+        }
         const map: Record<string, string> = {
           ALREADY_REQUESTED_BY_OTHER:
             "이미 다른 사용자가 대출을 신청한 도서입니다.",
           ALREADY_REQUESTED_BY_SELF: "이미 신청한 도서입니다.",
-          NOT_ELIGIBLE: "현재 대출 자격을 만족하지 않습니다 (월 한도/연체 등 확인).",
         };
         setError(map[json?.error] || json?.error || "신청 처리에 실패했습니다.");
         return;
@@ -182,21 +226,41 @@ export function RequestBookButton({
         type="button"
         onClick={() => {
           setError(null);
+          setReasons([]);
           setConfirmOpen(true);
         }}
         className={`${sizing} inline-flex items-center justify-center rounded-md bg-ink text-paper hover:opacity-90 transition-opacity`}
       >
         대출 신청
       </button>
-      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+      <Dialog
+        open={confirmOpen}
+        onOpenChange={(o) => {
+          if (!o) {
+            setError(null);
+            setReasons([]);
+          }
+          setConfirmOpen(o);
+        }}
+      >
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>대출 신청 확인</DialogTitle>
+            <DialogTitle>
+              {reasons.length > 0 ? "대출 신청 불가" : "대출 신청 확인"}
+            </DialogTitle>
             <DialogDescription className="pt-2">
-              &quot;{bookTitle}&quot;을(를) 대출 신청하시겠습니까? 관리자 승인
-              후 대출이 확정됩니다.
+              {reasons.length > 0
+                ? "아래 사유로 지금은 대출을 신청할 수 없습니다."
+                : `"${bookTitle}"을(를) 대출 신청하시겠습니까? 관리자 승인 후 대출이 확정됩니다.`}
             </DialogDescription>
           </DialogHeader>
+          {reasons.length > 0 && (
+            <ul className="text-sm bg-busy-soft border border-busy-border text-busy rounded-md px-3 py-2 space-y-1.5 list-disc list-inside">
+              {reasons.map((r, i) => (
+                <li key={i}>{r}</li>
+              ))}
+            </ul>
+          )}
           {error && (
             <div className="text-sm text-busy bg-busy-soft border border-busy-border px-3 py-2 rounded-md">
               {error}
@@ -208,11 +272,13 @@ export function RequestBookButton({
               onClick={() => setConfirmOpen(false)}
               disabled={loading}
             >
-              취소
+              {reasons.length > 0 ? "닫기" : "취소"}
             </Button>
-            <Button onClick={submitRequest} disabled={loading}>
-              {loading ? "신청 중..." : "신청"}
-            </Button>
+            {reasons.length === 0 && (
+              <Button onClick={submitRequest} disabled={loading}>
+                {loading ? "신청 중..." : "신청"}
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

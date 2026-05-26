@@ -1,17 +1,19 @@
 // 연체 목록 — status='overdue' 만 (Vercel Cron이 매일 자정 자동 갱신, Day 7)
 import { requireAny } from "@/lib/auth/admin-auth";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { RentalReturnTable } from "@/components/admin/RentalReturnTable";
+
+export const dynamic = "force-dynamic";
 
 export default async function AdminRentalsOverduePage() {
   await requireAny();
-  const supabase = createClient();
+  const supabase = createAdminClient();
 
   const { data: rentals, error } = await supabase
     .from("rentals")
     .select(
       `
-      id, status, rented_at, due_date,
+      id, status, rented_at, due_date, return_requested_at,
       book:books!book_id (id, title, author),
       user:users!user_id (id, name, employee_no, department)
     `,
