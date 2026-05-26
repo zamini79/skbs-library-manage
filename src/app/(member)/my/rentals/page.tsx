@@ -295,9 +295,13 @@ export default async function MyRentalsPage() {
                         soon ? "text-busy" : "text-ink-muted",
                       )}
                     >
-                      대여 {fmtDate(r.rented_at)} · 반납기한{" "}
-                      <span className="font-mono tabular">
-                        {fmtDate(r.due_date)}
+                      <span>대여 {fmtDate(r.rented_at)}</span>
+                      <span className="hidden md:inline"> · </span>
+                      <span className="block md:inline">
+                        반납기한{" "}
+                        <span className="font-mono tabular">
+                          {fmtDate(r.due_date)}
+                        </span>
                       </span>
                     </div>
                   </div>
