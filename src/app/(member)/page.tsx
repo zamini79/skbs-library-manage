@@ -136,8 +136,8 @@ export default async function MemberHomePage({
         </div>
       </div>
 
-      {/* 데스크탑: 카테고리 + 정렬 + 페이지를 한 줄에 */}
-      <div className="hidden md:flex md:items-center md:justify-between md:gap-4">
+      {/* 데스크탑: 카테고리 + 정렬 + 페이지를 한 줄에 (hero와의 간격 24px→17px, space-y-6 override) */}
+      <div className="hidden md:flex md:items-center md:justify-between md:gap-4 md:!mt-[17px]">
         <div className="flex-1 min-w-0">
           <CategoryTabs current={category} />
         </div>
@@ -166,7 +166,7 @@ export default async function MemberHomePage({
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 2xl:grid-cols-8 gap-x-4 gap-y-6 md:gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 2xl:grid-cols-8 gap-x-4 gap-y-6 md:gap-3 md:!mt-3">
             {books.map((book) => (
               <BookCard key={book.id} book={book} />
             ))}

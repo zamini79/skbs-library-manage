@@ -11,7 +11,7 @@ export function CategoryTabs({ current }: { current?: BookCategory }) {
         <Link
           href="/"
           className={cn(
-            "category-chip shrink-0 md:shrink",
+            "category-chip shrink-0 md:shrink md:py-0.5 md:leading-tight",
             !current && "active",
           )}
         >
@@ -22,7 +22,7 @@ export function CategoryTabs({ current }: { current?: BookCategory }) {
             key={cat}
             href={`/?category=${encodeURIComponent(cat)}`}
             className={cn(
-              "category-chip shrink-0 md:shrink",
+              "category-chip shrink-0 md:shrink md:py-0.5 md:leading-tight",
               current === cat && "active",
             )}
           >
