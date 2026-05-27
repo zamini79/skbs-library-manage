@@ -138,14 +138,14 @@ export function BookPagination({
             "w-4 h-7 inline-flex items-center justify-center text-ink-muted shrink-0",
         })}
       </div>
-      {/* 데스크탑: 그룹 10, 기존 사이즈 */}
+      {/* 데스크탑: 그룹 10, 사이즈 30% 축소 (36px → 25px) */}
       <div className="hidden sm:block">
         {renderNav(10, {
           wrapper: "flex items-center justify-center gap-1 text-sm flex-wrap",
-          nav: "w-9 h-9 inline-flex items-center justify-center rounded-md border border-line bg-paper text-ink transition-colors",
-          page: "min-w-9 h-9 px-2 inline-flex items-center justify-center rounded-md border text-xs font-mono tabular transition-colors",
+          nav: "w-[25px] h-[25px] inline-flex items-center justify-center rounded-md border border-line bg-paper text-ink transition-colors",
+          page: "min-w-[25px] h-[25px] px-1.5 inline-flex items-center justify-center rounded-md border text-xs font-mono tabular transition-colors",
           ellipsis:
-            "w-7 h-9 inline-flex items-center justify-center text-ink-muted",
+            "w-5 h-[25px] inline-flex items-center justify-center text-ink-muted",
         })}
       </div>
     </>

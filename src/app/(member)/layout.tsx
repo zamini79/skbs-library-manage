@@ -87,7 +87,7 @@ export default async function MemberLayout({
 
       {daysLeft !== null && <ConsentExpiryBanner daysLeft={daysLeft} />}
 
-      <main className="flex-1 mx-auto w-full max-w-[1720px] px-4 md:px-8 pt-6 pb-8 md:pt-4 md:pb-6">
+      <main className="flex-1 mx-auto w-full max-w-[1720px] px-4 md:px-8 pt-6 pb-8 md:pt-2 md:pb-6">
         {children}
       </main>
 

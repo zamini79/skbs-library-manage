@@ -97,16 +97,13 @@ export default async function MemberHomePage({
       </section>
 
       {/* 데스크탑 editorial hero (paper-warm 박스 + 검색바) — 1920×1080 한 화면 수용 위해 컴팩트화 */}
-      <section className="hidden md:block bg-paper-warm border border-line rounded-md px-6 py-4 xl:px-8 xl:py-5">
+      <section className="hidden md:block md:!mt-0 bg-paper-warm border border-line rounded-md px-6 py-2.5 xl:px-8 xl:py-3">
         <div className="flex flex-row items-center justify-between gap-6">
-          <div className="space-y-1">
-            <div className="text-[10px] text-ink-muted tracking-overline uppercase">
-              SK BIOSCIENCE LIBRARY
-            </div>
-            <h1 className="font-serif text-2xl xl:text-3xl font-bold tracking-tight text-ink leading-tight">
-              오늘, 어떤 책장을 열어볼까요?
-            </h1>
-            <p className="text-xs text-ink-soft">
+          <h1 className="font-serif text-2xl xl:text-3xl font-bold tracking-tight text-ink leading-tight">
+            오늘, 어떤 책장을 열어볼까요?
+          </h1>
+          <div className="flex items-center gap-4 flex-shrink-0">
+            <p className="text-xs text-ink-soft whitespace-nowrap">
               총{" "}
               <span className="font-mono font-medium text-ink">
                 {(count ?? 0).toLocaleString()}
@@ -123,8 +120,6 @@ export default async function MemberHomePage({
                 </>
               )}
             </p>
-          </div>
-          <div className="flex-shrink-0">
             <BookSearch />
           </div>
         </div>
