@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { BookEditDialog } from "@/components/admin/BookEditDialog";
 import {
   Dialog,
   DialogContent,
@@ -155,12 +156,13 @@ export function BooksTable({ books }: { books: Book[] }) {
               <TableHead className="w-24 text-right">가용</TableHead>
               <TableHead className="w-24">상태</TableHead>
               <TableHead className="w-28 text-right">단가</TableHead>
+              <TableHead className="w-20 text-right">관리</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {books.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
+                <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
                   검색 결과가 없습니다.
                 </TableCell>
               </TableRow>
@@ -208,6 +210,9 @@ export function BooksTable({ books }: { books: Book[] }) {
                     <TableCell>{statusBadge(book)}</TableCell>
                     <TableCell className="text-right font-mono tabular">
                       {book.price.toLocaleString()}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <BookEditDialog book={book} />
                     </TableCell>
                   </TableRow>
                 );
