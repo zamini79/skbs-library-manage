@@ -92,7 +92,7 @@ export default async function MemberLayout({
       </main>
 
       {/* 데스크탑 푸터 */}
-      <footer className="hidden md:block border-t border-line bg-paper py-4">
+      <footer className="hidden md:block border-t border-line bg-paper py-[11px]">
         <div className="container mx-auto text-xs text-ink-muted text-center">
           © SK Bioscience · 사내 도서 관리 시스템
         </div>
