@@ -79,28 +79,24 @@ export default async function MemberHomePage({
     <div className="space-y-6">
       {/* 모바일 hero — paper-warm 박스 없이 텍스트만, 가운데 정렬 없이 좌측 정렬 */}
       <section className="md:hidden space-y-3">
-        <div className="space-y-2">
-          <div className="text-[11px] text-library-accent tracking-overline uppercase font-bold">
-            TODAY · SK BIOSCIENCE LIBRARY
-          </div>
-          <h1 className="font-serif text-[23px] font-bold tracking-tight text-ink leading-[1.1] [text-wrap:balance]">
-            오늘, 어떤 책장을 열어볼까요?
-          </h1>
-          <p className="text-xs text-ink-soft">
+        <h1 className="font-serif text-[23px] font-bold tracking-tight text-ink leading-[1.1] [text-wrap:balance]">
+          오늘, 어떤 책장을 열어볼까요?
+        </h1>
+        <div className="flex items-center gap-2">
+          <p className="text-xs text-ink-soft shrink-0 whitespace-nowrap">
             총{" "}
             <span className="font-mono font-medium text-ink">
               {(totalBooks ?? 0).toLocaleString()}
             </span>
             권 등록
-            {rawQ && (
-              <>
-                {" "}
-                · <span className="text-ink">&ldquo;{rawQ}&rdquo;</span> 검색 결과
-              </>
-            )}
           </p>
+          <BookSearch />
         </div>
-        <BookSearch />
+        {rawQ && (
+          <p className="text-xs text-ink-soft">
+            <span className="text-ink">&ldquo;{rawQ}&rdquo;</span> 검색 결과
+          </p>
+        )}
       </section>
 
       {/* 데스크탑 editorial hero (paper-warm 박스 + 검색바) — 1920×1080 한 화면 수용 위해 컴팩트화 */}
