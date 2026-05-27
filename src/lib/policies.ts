@@ -15,7 +15,6 @@ export const MILEAGE_POLICY = {
 export const BOOK_CATEGORIES = [
   "철학/종교/인문",
   "사회과학",
-  "음반",
   "문학",
   "역사/여행",
 ] as const;

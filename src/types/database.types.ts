@@ -382,7 +382,6 @@ export type Database = {
       book_category:
         | "철학/종교/인문"
         | "사회과학"
-        | "음반"
         | "문학"
         | "역사/여행"
       book_status: "active" | "disposed"
@@ -521,7 +520,6 @@ export const Constants = {
       book_category: [
         "철학/종교/인문",
         "사회과학",
-        "음반",
         "문학",
         "역사/여행",
       ],
