@@ -207,7 +207,7 @@ export function BooksTable({ books }: { books: Book[] }) {
                     <TableCell className="text-right font-mono tabular">
                       {book.available_quantity}
                     </TableCell>
-                    <TableCell>{statusBadge(book)}</TableCell>
+                    <TableCell className="whitespace-nowrap">{statusBadge(book)}</TableCell>
                     <TableCell className="text-right font-mono tabular">
                       {book.price.toLocaleString()}
                     </TableCell>
