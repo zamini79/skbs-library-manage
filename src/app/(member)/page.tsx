@@ -10,7 +10,7 @@ import { BookSortFilter } from "@/components/member/BookSortFilter";
 import { BookSearch } from "@/components/member/BookSearch";
 import { BookPagination } from "@/components/member/BookPagination";
 
-const PAGE_SIZE = 18; // PC 1920x1080 기준 9 cols × 2 rows (book 2:3 비율 유지)
+const PAGE_SIZE = 16; // PC 1920x1080 기준 8 cols × 2 rows (모바일 2 cols × 8 rows)
 
 function isCategory(v: string | undefined): v is BookCategory {
   return !!v && (BOOK_CATEGORIES as readonly string[]).includes(v);
@@ -166,7 +166,7 @@ export default async function MemberHomePage({
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 2xl:grid-cols-9 gap-x-4 gap-y-6 md:gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 2xl:grid-cols-8 gap-x-4 gap-y-6 md:gap-3">
             {books.map((book) => (
               <BookCard key={book.id} book={book} />
             ))}
