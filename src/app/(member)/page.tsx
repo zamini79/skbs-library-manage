@@ -59,10 +59,17 @@ export default async function MemberHomePage({
   }
 
   const offset = (requestedPage - 1) * PAGE_SIZE;
-  const { data: books, count, error } = await query.range(
-    offset,
-    offset + PAGE_SIZE - 1,
-  );
+  const [
+    { data: books, count, error },
+    { count: totalBooks },
+  ] = await Promise.all([
+    query.range(offset, offset + PAGE_SIZE - 1),
+    // "총 xxx권 등록" 표시용 — 카테고리/검색과 무관한 전체 활성 도서 수
+    supabase
+      .from("books")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "active"),
+  ]);
 
   const totalPages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE));
   const currentPage = Math.min(requestedPage, totalPages);
@@ -82,7 +89,7 @@ export default async function MemberHomePage({
           <p className="text-xs text-ink-soft">
             총{" "}
             <span className="font-mono font-medium text-ink">
-              {(count ?? 0).toLocaleString()}
+              {(totalBooks ?? 0).toLocaleString()}
             </span>
             권 등록
             {rawQ && (
@@ -106,7 +113,7 @@ export default async function MemberHomePage({
             <p className="text-xs text-ink-soft whitespace-nowrap">
               총{" "}
               <span className="font-mono font-medium text-ink">
-                {(count ?? 0).toLocaleString()}
+                {(totalBooks ?? 0).toLocaleString()}
               </span>
               권 등록
               {rawQ && (
