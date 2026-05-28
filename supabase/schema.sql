@@ -207,6 +207,22 @@ CREATE TABLE public.mileage_history (
 COMMENT ON TABLE public.mileage_history IS '마일리지 적립/차감 이력';
 
 
+-- ====================
+-- RENTAL_NOTIFICATIONS (대여 알림 메일 발송 이력 — 일일 cron 중복 방지)
+-- ====================
+CREATE TABLE public.rental_notifications (
+  id                UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  rental_id         UUID NOT NULL REFERENCES public.rentals(id) ON DELETE CASCADE,
+  notification_type TEXT NOT NULL CHECK (notification_type IN ('due_2','due_1','due_0','overdue')),
+  sent_for_date     DATE NOT NULL,
+  sent_at           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (rental_id, notification_type, sent_for_date)
+);
+
+COMMENT ON TABLE public.rental_notifications IS
+  '대여 알림 메일 발송 이력 — 일일 cron 중복 발송 방지';
+
+
 -- ----------------------------------------------------------------------------
 -- 4. INDEXES
 -- ----------------------------------------------------------------------------
@@ -235,6 +251,10 @@ CREATE INDEX idx_rentals_user_rented ON public.rentals(user_id, rented_at DESC);
 -- mileage_history
 CREATE INDEX idx_mileage_user_id ON public.mileage_history(user_id);
 CREATE INDEX idx_mileage_created_at ON public.mileage_history(created_at DESC);
+
+-- rental_notifications
+CREATE INDEX idx_rental_notifications_rental
+  ON public.rental_notifications (rental_id, sent_for_date DESC);
 
 
 -- ----------------------------------------------------------------------------
@@ -459,6 +479,8 @@ ALTER TABLE public.admins         ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.books          ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.rentals        ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.mileage_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.rental_notifications ENABLE ROW LEVEL SECURITY;
+-- rental_notifications: 정책 미정의 → authenticated/anon 접근 불가, service_role 만 가능
 
 
 -- ====================

@@ -4,6 +4,10 @@
     {
       "path": "/api/cron/update-overdue",
       "schedule": "0 15 * * *"
+    },
+    {
+      "path": "/api/cron/rental-notifications",
+      "schedule": "0 0 * * *"
     }
   ]
 }
