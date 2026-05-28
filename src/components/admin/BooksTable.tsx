@@ -125,6 +125,7 @@ export function BooksTable({ books }: { books: Book[] }) {
           <Button
             variant="destructive"
             size="sm"
+            className="whitespace-nowrap"
             disabled={selected.size === 0}
             onClick={() => {
               setResult(null);
