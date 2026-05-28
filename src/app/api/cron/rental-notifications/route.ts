@@ -85,7 +85,7 @@ function buildEmail(
 빠른 시일 내 반납 부탁드립니다.
 
 — SK Bioscience 사내 도서관`;
-    const html = text.replace(/\n/g, "<br>");
+    const html = `<div style="font-family:'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo',sans-serif;font-size:11pt;line-height:1.6;">${text.replace(/\n/g, "<br>")}</div>`;
     return { subject, text, html };
   }
 
@@ -103,7 +103,7 @@ function buildEmail(
 기한 내 반납 부탁드립니다.
 
 — SK Bioscience 사내 도서관`;
-  const html = text.replace(/\n/g, "<br>");
+  const html = `<div style="font-family:'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo',sans-serif;font-size:11pt;line-height:1.6;">${text.replace(/\n/g, "<br>")}</div>`;
   return { subject, text, html };
 }
 
