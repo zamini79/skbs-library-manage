@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import type { Database } from "@/types/database.types";
 import {
   Table,
@@ -33,6 +34,16 @@ import {
 
 type Book = Database["public"]["Tables"]["books"]["Row"];
 
+type SortCol =
+  | "title"
+  | "author"
+  | "publisher"
+  | "category"
+  | "status"
+  | "quantity"
+  | "available"
+  | "price";
+
 const REASON_OPTIONS = [
   { value: "lost", label: "분실 (lost)" },
   { value: "damaged", label: "훼손 (damaged)" },
@@ -57,6 +68,61 @@ export function BooksTable({ books }: { books: Book[] }) {
     disposed: number;
     skipped: Array<{ id: string; reason: string }>;
   } | null>(null);
+  const [sortCol, setSortCol] = useState<SortCol>("title");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+
+  function toggleSort(col: SortCol) {
+    if (col === sortCol) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else {
+      setSortCol(col);
+      setSortDir("asc");
+    }
+  }
+  function sortIcon(col: SortCol) {
+    if (col !== sortCol)
+      return <ArrowUpDown className="inline h-3 w-3 ml-1 opacity-40" />;
+    return sortDir === "asc" ? (
+      <ArrowUp className="inline h-3 w-3 ml-1" />
+    ) : (
+      <ArrowDown className="inline h-3 w-3 ml-1" />
+    );
+  }
+
+  const displayed = useMemo(() => {
+    // 상태 정렬 키: 가용=0 / 대여중=1 / 폐기=2
+    const statusKey = (b: Book): number => {
+      if (b.status === "disposed") return 2;
+      return b.available_quantity > 0 ? 0 : 1;
+    };
+    const getKey = (b: Book): string | number => {
+      switch (sortCol) {
+        case "title":
+          return b.title;
+        case "author":
+          return b.author;
+        case "publisher":
+          return b.publisher;
+        case "category":
+          return b.category;
+        case "status":
+          return statusKey(b);
+        case "quantity":
+          return b.total_quantity;
+        case "available":
+          return b.available_quantity;
+        case "price":
+          return b.price;
+      }
+    };
+    return [...books].sort((a, b) => {
+      const ka = getKey(a);
+      const kb = getKey(b);
+      let cmp: number;
+      if (typeof ka === "number" && typeof kb === "number") cmp = ka - kb;
+      else cmp = String(ka).localeCompare(String(kb), "ko");
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+  }, [books, sortCol, sortDir]);
 
   const eligibleIds = books
     .filter(
@@ -151,24 +217,90 @@ export function BooksTable({ books }: { books: Book[] }) {
                   disabled={eligibleIds.length === 0}
                 />
               </TableHead>
-              <TableHead className="min-w-[260px]">제목 / 저자 / 출판사</TableHead>
-              <TableHead className="w-28">카테고리</TableHead>
-              <TableHead className="w-20 text-right">수량</TableHead>
-              <TableHead className="w-24 text-right">가용</TableHead>
-              <TableHead className="w-24">상태</TableHead>
-              <TableHead className="w-28 text-right">단가</TableHead>
+              <TableHead className="min-w-[200px]">
+                <button
+                  type="button"
+                  onClick={() => toggleSort("title")}
+                  className="inline-flex items-center hover:text-foreground transition-colors"
+                >
+                  제목{sortIcon("title")}
+                </button>
+              </TableHead>
+              <TableHead className="w-32">
+                <button
+                  type="button"
+                  onClick={() => toggleSort("author")}
+                  className="inline-flex items-center hover:text-foreground transition-colors"
+                >
+                  저자{sortIcon("author")}
+                </button>
+              </TableHead>
+              <TableHead className="w-32">
+                <button
+                  type="button"
+                  onClick={() => toggleSort("publisher")}
+                  className="inline-flex items-center hover:text-foreground transition-colors"
+                >
+                  출판사{sortIcon("publisher")}
+                </button>
+              </TableHead>
+              <TableHead className="w-28">
+                <button
+                  type="button"
+                  onClick={() => toggleSort("category")}
+                  className="inline-flex items-center hover:text-foreground transition-colors"
+                >
+                  카테고리{sortIcon("category")}
+                </button>
+              </TableHead>
+              <TableHead className="w-20 text-right">
+                <button
+                  type="button"
+                  onClick={() => toggleSort("quantity")}
+                  className="inline-flex items-center hover:text-foreground transition-colors"
+                >
+                  수량{sortIcon("quantity")}
+                </button>
+              </TableHead>
+              <TableHead className="w-24 text-right">
+                <button
+                  type="button"
+                  onClick={() => toggleSort("available")}
+                  className="inline-flex items-center hover:text-foreground transition-colors"
+                >
+                  가용{sortIcon("available")}
+                </button>
+              </TableHead>
+              <TableHead className="w-24">
+                <button
+                  type="button"
+                  onClick={() => toggleSort("status")}
+                  className="inline-flex items-center hover:text-foreground transition-colors"
+                >
+                  상태{sortIcon("status")}
+                </button>
+              </TableHead>
+              <TableHead className="w-28 text-right">
+                <button
+                  type="button"
+                  onClick={() => toggleSort("price")}
+                  className="inline-flex items-center hover:text-foreground transition-colors"
+                >
+                  단가{sortIcon("price")}
+                </button>
+              </TableHead>
               <TableHead className="w-20 text-right">관리</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {books.length === 0 ? (
+            {displayed.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
+                <TableCell colSpan={10} className="text-center py-12 text-muted-foreground">
                   검색 결과가 없습니다.
                 </TableCell>
               </TableRow>
             ) : (
-              books.map((book) => {
+              displayed.map((book) => {
                 const canSelect =
                   book.status === "active" &&
                   book.available_quantity === book.total_quantity;
@@ -193,13 +325,16 @@ export function BooksTable({ books }: { books: Book[] }) {
                       <Link
                         href={`/books/${book.id}`}
                         target="_blank"
-                        className="hover:text-primary"
+                        className="font-medium leading-tight hover:text-primary"
                       >
-                        <div className="font-medium leading-tight">{book.title}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {book.author} · {book.publisher}
-                        </div>
+                        {book.title}
                       </Link>
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {book.author}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {book.publisher}
                     </TableCell>
                     <TableCell className="text-xs">{book.category}</TableCell>
                     <TableCell className="text-right font-mono tabular">

@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
+import { daysOverdueKst } from "@/lib/rental-due";
 import {
   Table,
   TableBody,
@@ -11,6 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -20,13 +23,22 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
+type SortCol =
+  | "title"
+  | "author"
+  | "publisher"
+  | "user"
+  | "rented"
+  | "due"
+  | "status";
+
 type RentalRow = {
   id: string;
   status: "active" | "overdue" | "returned";
   rented_at: string;
   due_date: string;
   return_requested_at: string | null;
-  book: { id: string; title: string; author: string } | null;
+  book: { id: string; title: string; author: string; publisher: string } | null;
   user: { id: string; name: string; employee_no: string; department: string } | null;
 };
 
@@ -34,11 +46,6 @@ function statusBadge(s: RentalRow["status"]) {
   if (s === "overdue") return <span className="badge-overdue">연체</span>;
   if (s === "returned") return <span className="badge-returned">반납완료</span>;
   return <span className="badge-active">대여중</span>;
-}
-
-function daysUntil(due: string): number {
-  const ms = new Date(due).getTime() - Date.now();
-  return Math.ceil(ms / (1000 * 60 * 60 * 24));
 }
 
 function fmtDate(iso: string): string {
@@ -64,6 +71,63 @@ export function RentalReturnTable({
     was_overdue: boolean;
     mileage_delta: number;
   } | null>(null);
+  const [searchQ, setSearchQ] = useState("");
+  const [sortCol, setSortCol] = useState<SortCol>("due");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+
+  function toggleSort(col: SortCol) {
+    if (col === sortCol) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else {
+      setSortCol(col);
+      setSortDir("asc");
+    }
+  }
+
+  function sortIcon(col: SortCol) {
+    if (col !== sortCol)
+      return <ArrowUpDown className="inline h-3 w-3 ml-1 opacity-40" />;
+    return sortDir === "asc" ? (
+      <ArrowUp className="inline h-3 w-3 ml-1" />
+    ) : (
+      <ArrowDown className="inline h-3 w-3 ml-1" />
+    );
+  }
+
+  const displayed = useMemo(() => {
+    const q = searchQ.trim().toLowerCase();
+    const filtered = !q
+      ? rentals
+      : rentals.filter(
+          (r) =>
+            (r.book?.title ?? "").toLowerCase().includes(q) ||
+            (r.book?.author ?? "").toLowerCase().includes(q) ||
+            (r.book?.publisher ?? "").toLowerCase().includes(q) ||
+            (r.user?.name ?? "").toLowerCase().includes(q),
+        );
+    const getKey = (r: RentalRow): string => {
+      switch (sortCol) {
+        case "title":
+          return r.book?.title ?? "";
+        case "author":
+          return r.book?.author ?? "";
+        case "publisher":
+          return r.book?.publisher ?? "";
+        case "user":
+          return r.user?.name ?? "";
+        case "rented":
+          return r.rented_at;
+        case "due":
+          return r.due_date;
+        case "status":
+          return r.status;
+      }
+    };
+    const sorted = [...filtered].sort((a, b) => {
+      const cmp = getKey(a).localeCompare(getKey(b), "ko");
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+    return sorted;
+  }, [rentals, searchQ, sortCol, sortDir]);
 
   function openDialog(r: RentalRow) {
     setTarget(r);
@@ -113,31 +177,120 @@ export function RentalReturnTable({
   const previewOverdue =
     target && new Date(target.due_date) < new Date();
 
+  const headerBtn = "inline-flex items-center hover:text-foreground transition-colors";
+
   return (
     <>
+      <div className="flex items-center gap-3 mb-3">
+        <Input
+          type="search"
+          placeholder="제목 또는 대여자 검색"
+          value={searchQ}
+          onChange={(e) => setSearchQ(e.target.value)}
+          className="max-w-xs"
+        />
+        <span className="text-xs text-muted-foreground whitespace-nowrap">
+          {displayed.length} / {rentals.length}
+          {searchQ && " (검색)"}
+        </span>
+      </div>
+
       <div className="bg-card border rounded-md overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="min-w-[260px]">도서</TableHead>
-              <TableHead>대여자</TableHead>
-              <TableHead className="w-28">대여일</TableHead>
-              <TableHead className="w-28">반납기한</TableHead>
+              <TableHead className="min-w-[200px]">
+                <button
+                  type="button"
+                  onClick={() => toggleSort("title")}
+                  className={headerBtn}
+                >
+                  제목{sortIcon("title")}
+                </button>
+              </TableHead>
+              <TableHead className="w-32">
+                <button
+                  type="button"
+                  onClick={() => toggleSort("author")}
+                  className={headerBtn}
+                >
+                  저자{sortIcon("author")}
+                </button>
+              </TableHead>
+              <TableHead className="w-32">
+                <button
+                  type="button"
+                  onClick={() => toggleSort("publisher")}
+                  className={headerBtn}
+                >
+                  출판사{sortIcon("publisher")}
+                </button>
+              </TableHead>
+              <TableHead>
+                <button
+                  type="button"
+                  onClick={() => toggleSort("user")}
+                  className={headerBtn}
+                >
+                  대여자{sortIcon("user")}
+                </button>
+              </TableHead>
+              <TableHead className="w-28 whitespace-nowrap">
+                <button
+                  type="button"
+                  onClick={() => toggleSort("rented")}
+                  className={headerBtn}
+                >
+                  대여일{sortIcon("rented")}
+                </button>
+              </TableHead>
+              <TableHead className="w-28 whitespace-nowrap">
+                <button
+                  type="button"
+                  onClick={() => toggleSort("due")}
+                  className={headerBtn}
+                >
+                  반납기한{sortIcon("due")}
+                </button>
+              </TableHead>
               {showOverdueDays && (
-                <TableHead className="w-20 text-right">연체일</TableHead>
+                <TableHead className="w-20 text-right whitespace-nowrap">
+                  연체일
+                </TableHead>
               )}
-              <TableHead className="w-24">상태</TableHead>
+              <TableHead className="w-24">
+                <button
+                  type="button"
+                  onClick={() => toggleSort("status")}
+                  className={headerBtn}
+                >
+                  상태{sortIcon("status")}
+                </button>
+              </TableHead>
               <TableHead className="w-20 text-right">액션</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {rentals.map((r) => (
+            {displayed.length === 0 && (
+              <TableRow>
+                <TableCell
+                  colSpan={showOverdueDays ? 9 : 8}
+                  className="text-center py-10 text-muted-foreground text-sm"
+                >
+                  검색 결과가 없습니다.
+                </TableCell>
+              </TableRow>
+            )}
+            {displayed.map((r) => (
               <TableRow key={r.id}>
-                <TableCell>
-                  <div className="font-medium">{r.book?.title ?? "(삭제됨)"}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {r.book?.author}
-                  </div>
+                <TableCell className="font-medium">
+                  {r.book?.title ?? "(삭제됨)"}
+                </TableCell>
+                <TableCell className="text-xs text-muted-foreground">
+                  {r.book?.author ?? ""}
+                </TableCell>
+                <TableCell className="text-xs text-muted-foreground">
+                  {r.book?.publisher ?? ""}
                 </TableCell>
                 <TableCell>
                   <div className="font-medium">{r.user?.name ?? "(삭제됨)"}</div>
@@ -145,15 +298,15 @@ export function RentalReturnTable({
                     {r.user?.department} · {r.user?.employee_no}
                   </div>
                 </TableCell>
-                <TableCell className="font-mono tabular text-xs">
+                <TableCell className="font-mono tabular text-xs whitespace-nowrap">
                   {fmtDate(r.rented_at)}
                 </TableCell>
-                <TableCell className="font-mono tabular text-xs">
+                <TableCell className="font-mono tabular text-xs whitespace-nowrap">
                   {fmtDate(r.due_date)}
                 </TableCell>
                 {showOverdueDays && (
-                  <TableCell className="text-right font-mono tabular text-destructive">
-                    D+{Math.abs(daysUntil(r.due_date))}
+                  <TableCell className="text-right font-mono tabular text-destructive whitespace-nowrap">
+                    D+{daysOverdueKst(r.due_date)}
                   </TableCell>
                 )}
                 <TableCell>

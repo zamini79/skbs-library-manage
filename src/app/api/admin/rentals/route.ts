@@ -6,7 +6,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getAnyOrError } from "@/lib/auth/admin-auth";
-import { RENTAL_POLICY } from "@/lib/policies";
+import { computeDueDate } from "@/lib/rental-due";
 
 export const runtime = "nodejs";
 
@@ -55,9 +55,7 @@ export async function POST(req: Request) {
   }
 
   const now = new Date();
-  const dueDate = new Date(
-    now.getTime() + RENTAL_POLICY.RENTAL_PERIOD_DAYS * 24 * 60 * 60 * 1000,
-  );
+  const dueDateIso = computeDueDate(now);
 
   const { data, error } = await supabase
     .from("rentals")
@@ -66,7 +64,7 @@ export async function POST(req: Request) {
       book_id,
       admin_id: admin.adminId,
       rented_at: now.toISOString(),
-      due_date: dueDate.toISOString(),
+      due_date: dueDateIso,
     })
     .select("id")
     .single();
@@ -81,6 +79,6 @@ export async function POST(req: Request) {
   return NextResponse.json({
     ok: true,
     id: data.id,
-    due_date: dueDate.toISOString(),
+    due_date: dueDateIso,
   });
 }

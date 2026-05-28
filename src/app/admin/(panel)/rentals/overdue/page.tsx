@@ -14,7 +14,7 @@ export default async function AdminRentalsOverduePage() {
     .select(
       `
       id, status, rented_at, due_date, return_requested_at,
-      book:books!book_id (id, title, author),
+      book:books!book_id (id, title, author, publisher),
       user:users!user_id (id, name, employee_no, department)
     `,
     )
@@ -32,9 +32,6 @@ export default async function AdminRentalsOverduePage() {
             {rentals?.length ?? 0}
           </span>
           건.
-        </p>
-        <p className="text-xs text-muted-foreground mt-2">
-          ※ overdue 상태는 매일 자정 Vercel Cron이 자동 갱신합니다 (Day 7 추가 예정). 그 전까지는 due_date를 넘은 대여라도 status가 active로 남아있을 수 있습니다.
         </p>
       </header>
 

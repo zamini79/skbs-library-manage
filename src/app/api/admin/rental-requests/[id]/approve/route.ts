@@ -3,7 +3,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getAnyOrError } from "@/lib/auth/admin-auth";
-import { RENTAL_POLICY } from "@/lib/policies";
+import { computeDueDate } from "@/lib/rental-due";
 
 export const runtime = "nodejs";
 
@@ -57,9 +57,7 @@ export async function POST(
 
   // 3) rentals INSERT (trigger가 books.available_quantity 자동 감소)
   const now = new Date();
-  const dueDate = new Date(
-    now.getTime() + RENTAL_POLICY.RENTAL_PERIOD_DAYS * 24 * 60 * 60 * 1000,
-  );
+  const dueDateIso = computeDueDate(now);
   const { data: rental, error: insErr } = await supabase
     .from("rentals")
     .insert({
@@ -67,7 +65,7 @@ export async function POST(
       book_id: request.book_id,
       admin_id: adminAuth.adminId,
       rented_at: now.toISOString(),
-      due_date: dueDate.toISOString(),
+      due_date: dueDateIso,
     })
     .select("id")
     .single();
@@ -98,6 +96,6 @@ export async function POST(
   return NextResponse.json({
     ok: true,
     rental_id: rental.id,
-    due_date: dueDate.toISOString(),
+    due_date: dueDateIso,
   });
 }

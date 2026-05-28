@@ -5,9 +5,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getMasterOrError } from "@/lib/auth/admin-auth";
 import { BookCreateSchema } from "@/lib/books-schema";
-import { fetchGoogleBookMetadata } from "@/lib/google-books";
-import { fetchKakaoBookMetadata } from "@/lib/kakao-books";
-import { fetchNaverBookMetadata } from "@/lib/naver-books";
+import { fetchAndStoreCover } from "@/lib/cover-fetch";
 
 export const runtime = "nodejs";
 
@@ -57,49 +55,13 @@ export async function POST(req: Request) {
     );
   }
 
-  // 표지·ISBN·description 자동 조회 — Kakao → Naver → Google 순차로 빈 칸 채움.
-  // - 표지: 첫 매칭 사용
-  // - ISBN: 첫 매칭이 없으면 다음 소스 시도
-  // - description: kakao 우선, 없으면 naver, 그래도 없으면 google
-  let cover: string | null = null;
-  let isbn: string | null = b.isbn;
-  let description: string | null = null;
-  let coverSource: "kakao" | "naver" | "google" | null = null;
-
-  const k = await fetchKakaoBookMetadata({ title: b.title, author: b.author });
-  if (k.cover) { cover = k.cover; coverSource = "kakao"; }
-  if (k.isbn && !isbn) isbn = k.isbn;
-  if (k.description) description = k.description;
-
-  if (!cover || !isbn || !description) {
-    const n = await fetchNaverBookMetadata({ title: b.title, author: b.author });
-    if (!cover && n.cover) { cover = n.cover; coverSource = "naver"; }
-    if (!isbn && n.isbn) isbn = n.isbn;
-    if (!description && n.description) description = n.description;
-  }
-  if (!cover || !isbn) {
-    const g = await fetchGoogleBookMetadata({ title: b.title, author: b.author });
-    if (!cover && g.cover) { cover = g.cover; coverSource = "google"; }
-    if (!isbn && g.isbn) isbn = g.isbn;
-  }
-
-  const updates: {
-    cover_url_external?: string;
-    isbn?: string;
-    description?: string;
-  } = {};
-  if (cover) updates.cover_url_external = cover;
-  if (isbn && isbn !== b.isbn) updates.isbn = isbn;
-  if (description) updates.description = description;
-
-  if (Object.keys(updates).length > 0) {
-    await supabase.from("books").update(updates).eq("id", data.id);
-  }
+  // 표지·ISBN·description 자동 조회 (Kakao → Naver → Google) — 공용 헬퍼 사용
+  const meta = await fetchAndStoreCover(supabase, data.id, b.title, b.author, b.isbn);
 
   return NextResponse.json({
     ok: true,
     id: data.id,
-    cover_fetched: cover !== null,
-    cover_source: coverSource,
+    cover_fetched: meta.cover !== null,
+    cover_source: meta.coverSource,
   });
 }

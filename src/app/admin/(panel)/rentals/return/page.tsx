@@ -15,7 +15,7 @@ export default async function AdminRentalsReturnPage() {
     .select(
       `
       id, status, rented_at, due_date, return_requested_at,
-      book:books!book_id (id, title, author),
+      book:books!book_id (id, title, author, publisher),
       user:users!user_id (id, name, employee_no, department)
     `,
     )
@@ -28,7 +28,7 @@ export default async function AdminRentalsReturnPage() {
   return (
     <div className="space-y-5">
       <header>
-        <h1 className="text-3xl font-bold tracking-tight">반납 처리</h1>
+        <h1 className="text-3xl font-bold tracking-tight">대여 목록</h1>
         <p className="text-md text-muted-foreground mt-1">
           현재 대여 중 또는 연체 상태인 도서{" "}
           <span className="font-mono font-medium text-foreground">
