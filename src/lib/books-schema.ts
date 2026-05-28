@@ -26,6 +26,7 @@ export const BookCreateSchema = z.object({
     .trim()
     .max(2048)
     .url("올바른 URL이 아닙니다")
+    .refine((u) => /^https:\/\//i.test(u), "https:// URL만 허용됩니다")
     .optional()
     .nullable()
     .or(z.literal("").transform(() => null)),

@@ -440,8 +440,14 @@ ALTER TABLE public.mileage_history ENABLE ROW LEVEL SECURITY;
 CREATE POLICY users_select_own ON public.users
   FOR SELECT USING (auth.uid() = id);
 
+-- 멤버는 본인 row 한정 + consent_given_at 컬럼만 수정 가능 (mileage 등 자가 조작 차단)
 CREATE POLICY users_update_own ON public.users
-  FOR UPDATE USING (auth.uid() = id);
+  FOR UPDATE
+  TO authenticated
+  USING (auth.uid() = id)
+  WITH CHECK (auth.uid() = id);
+REVOKE UPDATE ON public.users FROM anon, authenticated;
+GRANT UPDATE (consent_given_at) ON public.users TO authenticated;
 
 -- 마일리지 랭킹 조회를 위해 모든 사용자가 active users의 일부 필드 조회 허용
 -- (애플리케이션에서 필요한 컬럼만 SELECT)
