@@ -15,6 +15,9 @@ type Eligibility = {
   holding_remaining: number;
   overdue_count: number;
   has_overdue: boolean;
+  cooldown_until: string | null;
+  in_cooldown: boolean;
+  cooldown_days_remaining: number;
 };
 
 export async function GET(req: Request) {

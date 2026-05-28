@@ -35,6 +35,9 @@ type Eligibility = {
   holding_remaining: number;
   overdue_count: number;
   has_overdue: boolean;
+  cooldown_until: string | null;
+  in_cooldown: boolean;
+  cooldown_days_remaining: number;
 };
 
 function useDebounce<T>(value: T, ms: number): T {
@@ -325,6 +328,14 @@ export function RentalNewForm() {
                 label={`동시 보유 잔여 ${elig.holding_remaining}권 (현재 ${elig.current_holding}/2)`}
               />
               <Check ok={!elig.has_overdue} label={`연체 보유 없음 (현재 ${elig.overdue_count}건)`} />
+              <Check
+                ok={!elig.in_cooldown}
+                label={
+                  elig.in_cooldown && elig.cooldown_until
+                    ? `연체 쿨다운 잔여 ${elig.cooldown_days_remaining}일 (~${new Date(elig.cooldown_until).toLocaleDateString("ko-KR")} 까지)`
+                    : "연체 쿨다운 없음"
+                }
+              />
             </ul>
 
             {submitError && (
