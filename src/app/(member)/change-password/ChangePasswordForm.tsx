@@ -66,7 +66,9 @@ export function ChangePasswordForm({ email }: { email: string }) {
         setError(`비밀번호 변경 실패: ${updErr.message}`);
         return;
       }
-      // 3) 안전을 위해 재로그인 — 모든 세션 무효화 후 새 비밀번호로 다시
+      // 3) 레거시 이관 계정 플래그 클리어 (멤버는 RLS 컬럼 제약으로 직접 못 바꿈 → 서버 경유)
+      await fetch("/api/auth/clear-pwd-flag", { method: "POST" });
+      // 4) 안전을 위해 재로그인 — 모든 세션 무효화 후 새 비밀번호로 다시
       await fetch("/api/auth/signout", { method: "POST" });
       router.replace("/login?reset=ok");
       router.refresh();

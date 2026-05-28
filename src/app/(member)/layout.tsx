@@ -32,11 +32,12 @@ export default async function MemberLayout({
 
   let name: string | null = null;
   let daysLeft: number | null = null;
+  let mustChangePassword = false;
   if (user) {
     // consent 컬럼 포함 조회 — 마이그레이션 적용 전이면 error 반환되므로 fallback
     const { data: profile, error: profileErr } = await supabase
       .from("users")
-      .select("name, email, consent_given_at")
+      .select("name, email, consent_given_at, must_change_password")
       .eq("id", user.id)
       .maybeSingle();
 
@@ -50,6 +51,9 @@ export default async function MemberLayout({
       name = fallback?.name ?? null;
     } else if (profile) {
       name = profile.name ?? null;
+      mustChangePassword = !!(
+        profile as { must_change_password?: boolean | null }
+      ).must_change_password;
 
       const consentGivenAt = (profile as { consent_given_at?: string | null })
         .consent_given_at;
@@ -85,6 +89,21 @@ export default async function MemberLayout({
       {/* 모바일 상단 바 (md 미만) */}
       <MobileTopBar loggedIn={loggedIn} name={name} />
 
+      {mustChangePassword && (
+        <div className="bg-busy-soft border-y border-busy-border text-busy text-sm">
+          <div className="mx-auto max-w-[1720px] px-4 md:px-8 py-2 flex items-center justify-between gap-3">
+            <div>
+              초기 임시 비밀번호 사용 중입니다 — 본인 비밀번호로 변경해 주세요.
+            </div>
+            <a
+              href="/change-password"
+              className="underline font-semibold whitespace-nowrap"
+            >
+              비밀번호 변경
+            </a>
+          </div>
+        </div>
+      )}
       {daysLeft !== null && <ConsentExpiryBanner daysLeft={daysLeft} />}
 
       <main className="flex-1 mx-auto w-full max-w-[1720px] px-4 md:px-8 pt-6 pb-8 md:pt-2 md:pb-6">

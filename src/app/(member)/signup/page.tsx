@@ -25,12 +25,16 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [alreadyRegistered, setAlreadyRegistered] = useState(false);
+  const [importedNotice, setImportedNotice] = useState<
+    null | { state: "sending" | "sent" | "fail"; message?: string }
+  >(null);
   const [loading, setLoading] = useState(false);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
     setAlreadyRegistered(false);
+    setImportedNotice(null);
     setLoading(true);
 
     const parsed = EmailSchema.safeParse({ email });
@@ -49,6 +53,21 @@ export default function SignupPage() {
       });
       const json = await res.json();
       if (json?.exists) {
+        if (json.must_change_password) {
+          // 레거시 이관 계정 — Supabase 비밀번호 재설정 메일 발송
+          setImportedNotice({ state: "sending" });
+          const supabase = createClient();
+          const { error: resetErr } = await supabase.auth.resetPasswordForEmail(
+            parsed.data.email,
+            { redirectTo: `${window.location.origin}/reset-password/update` },
+          );
+          if (resetErr) {
+            setImportedNotice({ state: "fail", message: resetErr.message });
+          } else {
+            setImportedNotice({ state: "sent" });
+          }
+          return;
+        }
         setAlreadyRegistered(true);
         return;
       }
@@ -123,6 +142,33 @@ export default function SignupPage() {
           </div>
         )}
 
+        {importedNotice && (
+          <div
+            className={
+              importedNotice.state === "fail"
+                ? "text-sm bg-busy-soft border border-busy-border text-busy px-3 py-2 rounded-md space-y-1"
+                : "text-sm bg-ok-soft border border-ok-border text-ok px-3 py-2 rounded-md space-y-1"
+            }
+          >
+            <div className="font-semibold">
+              {importedNotice.state === "sending" && "비밀번호 재설정 메일 발송 중..."}
+              {importedNotice.state === "sent" && "기존 시스템에서 이관된 계정입니다."}
+              {importedNotice.state === "fail" && "메일 발송 실패"}
+            </div>
+            <div className="text-xs text-ink-soft">
+              {importedNotice.state === "sent" && (
+                <>
+                  비밀번호 재설정 메일을{" "}
+                  <span className="font-mono">{email}</span>로 발송했습니다.
+                  메일의 링크를 클릭하여 새 비밀번호를 설정하신 후 로그인해
+                  주세요. (스팸함도 확인)
+                </>
+              )}
+              {importedNotice.state === "fail" && importedNotice.message}
+            </div>
+          </div>
+        )}
+
         {error && (
           <div className="text-sm text-busy bg-busy-soft border border-busy-border px-3 py-2 rounded-md">
             {error}
@@ -132,7 +178,7 @@ export default function SignupPage() {
         <Button
           type="submit"
           className="w-full"
-          disabled={loading || alreadyRegistered}
+          disabled={loading || alreadyRegistered || importedNotice?.state === "sent"}
         >
           {loading ? "확인 중..." : "인증 코드 받기"}
         </Button>

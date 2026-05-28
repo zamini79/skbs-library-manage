@@ -88,6 +88,7 @@ CREATE TABLE public.users (
   department      TEXT NOT NULL,
   mileage         INTEGER NOT NULL DEFAULT 0,
   is_active       BOOLEAN NOT NULL DEFAULT TRUE,
+  must_change_password BOOLEAN NOT NULL DEFAULT FALSE, -- 레거시 이관 계정 플래그 (TRUE 면 /change-password 강제)
   created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 

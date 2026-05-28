@@ -67,6 +67,8 @@ export default function ResetPasswordUpdatePage() {
         setError(`비밀번호 변경 실패: ${updErr.message}`);
         return;
       }
+      // 레거시 이관 계정 플래그 클리어 (signOut 전, 세션 살아있을 때)
+      await fetch("/api/auth/clear-pwd-flag", { method: "POST" });
       // 즉시 로그인 페이지로 이동 (새 비밀번호로 다시 로그인)
       await supabase.auth.signOut();
       router.replace("/login?reset=ok");

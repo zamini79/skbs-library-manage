@@ -45,3 +45,7 @@ supabase/.temp
 
 # Local data files (xlsx imports, dumps)
 /data/
+# Legacy rental import spreadsheets — PII (이메일/사번/이름), 로컬 전용
+doc/*.xlsx
+doc/*.xlsm
+doc/~$*
