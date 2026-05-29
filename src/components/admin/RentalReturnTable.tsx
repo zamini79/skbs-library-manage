@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dialog";
 
 type SortCol =
+  | "pending" // 반납 신청 우선 (기본) — 헤더에는 없는 진입 기본 정렬
   | "title"
   | "author"
   | "publisher"
@@ -72,7 +73,9 @@ export function RentalReturnTable({
     mileage_delta: number;
   } | null>(null);
   const [searchQ, setSearchQ] = useState("");
-  const [sortCol, setSortCol] = useState<SortCol>("due");
+  // 기본 정렬: 반납 신청 들어온 건을 최상단(그 안에서 반납기한 이른 순).
+  // 사용자가 컬럼 헤더를 누르면 해당 컬럼 정렬로 전환된다.
+  const [sortCol, setSortCol] = useState<SortCol>("pending");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
   function toggleSort(col: SortCol) {
@@ -104,6 +107,15 @@ export function RentalReturnTable({
             (r.book?.publisher ?? "").toLowerCase().includes(q) ||
             (r.user?.name ?? "").toLowerCase().includes(q),
         );
+    // 기본 진입 정렬: 반납 신청 건 최상단 → 그 안에서 반납기한 이른 순
+    if (sortCol === "pending") {
+      return [...filtered].sort((a, b) => {
+        const ar = a.return_requested_at ? 0 : 1;
+        const br = b.return_requested_at ? 0 : 1;
+        if (ar !== br) return ar - br;
+        return a.due_date.localeCompare(b.due_date);
+      });
+    }
     const getKey = (r: RentalRow): string => {
       switch (sortCol) {
         case "title":
@@ -120,6 +132,8 @@ export function RentalReturnTable({
           return r.due_date;
         case "status":
           return r.status;
+        default:
+          return "";
       }
     };
     const sorted = [...filtered].sort((a, b) => {
@@ -282,7 +296,10 @@ export function RentalReturnTable({
               </TableRow>
             )}
             {displayed.map((r) => (
-              <TableRow key={r.id}>
+              <TableRow
+                key={r.id}
+                className={r.return_requested_at ? "bg-primary/5" : undefined}
+              >
                 <TableCell className="font-medium">
                   {r.book?.title ?? "(삭제됨)"}
                 </TableCell>
