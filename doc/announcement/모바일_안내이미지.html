@@ -33,9 +33,10 @@
   .hero h1{
     font-family:"Noto Serif KR",serif; font-weight:800;
     font-size:40px; line-height:1.18; margin-top:14px; letter-spacing:-.5px;
-    text-wrap:balance;
+    display:flex; align-items:center; justify-content:space-between; gap:24px;
   }
-  .hero .emoji{font-size:46px; display:block; margin-bottom:6px;}
+  .hero h1 .htext{text-wrap:balance;}
+  .hero .emoji{font-size:64px; flex:none; line-height:1;}
   .hero .access{
     margin-top:22px; display:inline-flex; align-items:center; gap:10px;
     background:rgba(251,246,234,.16); border:1px solid rgba(251,246,234,.35);
@@ -65,7 +66,7 @@
   }
   .tile .ic{font-size:28px;}
   .tile h3{font-size:18px; margin:10px 0 6px; font-weight:800;}
-  .tile p{font-size:14.5px; color:var(--ink-soft); line-height:1.55;}
+  .tile p{font-size:16px; color:var(--ink-soft); line-height:1.55;}
   .tile .hl{color:var(--accent); font-weight:800;}
   /* 단계 흐름 */
   .flow{
@@ -79,7 +80,7 @@
     background:var(--accent); color:#fbf6ea; font-weight:800; font-size:15px;
     display:flex; align-items:center; justify-content:center;
   }
-  .step .tx{font-size:16px; line-height:1.5; padding-top:3px;}
+  .step .tx{font-size:19px; line-height:1.5; padding-top:2px;}
   .step .tx b{color:var(--accent);}
   .step .tx .desk{color:var(--ok); font-weight:800;}
   /* 미니 폰 목업 */
@@ -117,10 +118,14 @@
   /* 안내 박스 */
   .note{
     margin:26px 0 4px; background:var(--paper-warm); border:1px solid var(--line);
-    border-radius:14px; padding:18px 22px; font-size:14.5px; color:var(--ink-soft);
+    border-radius:14px; padding:18px 22px; font-size:16px; color:var(--ink-soft);
     line-height:1.65;
   }
   .note b{color:var(--accent);}
+  .note p{position:relative; padding-left:20px;}
+  .note p + p{margin-top:8px;}
+  .note p::before{content:"•"; position:absolute; left:3px; color:var(--accent); font-weight:800;}
+  .note .sub{display:block; padding-left:14px; margin-top:2px;}
   /* 푸터 */
   .foot{
     background:var(--ink); color:#e9dcc4; padding:22px 48px;
@@ -135,10 +140,9 @@
 
     <!-- 헤더 -->
     <div class="hero">
-      <span class="emoji">📚</span>
       <div class="kicker">SK BIOSCIENCE LIBRARY · OPEN</div>
-      <h1>사내 도서관이<br/>스콘 속으로 들어왔어요</h1>
-      <div class="access">📱 <span><b>스콘</b> &gt; 업무 &gt; 시설/방문 &gt; <b>송도 도서관</b> 선택!</span></div>
+      <h1><span class="htext">사내 도서관이<br/>스콘 속으로 들어왔어요</span><span class="emoji">📚</span></h1>
+      <div class="access"><span><b>스콘</b> &gt; 업무 &gt; 시설/방문 &gt; <b>송도 도서관</b> 선택!</span></div>
       <div class="phone-note">설치 없이<br/>모바일에서 바로</div>
     </div>
 
@@ -148,19 +152,17 @@
       <div class="sec-title"><span class="badge">①</span> 이렇게 시작하세요</div>
       <div class="grid2">
         <div class="tile">
-          <div class="ic">✉️</div>
           <h3>회원가입</h3>
           <p><span class="hl">사내 이메일(@sk.com)</span>로<br/>간편하게 가입하세요. (최초 1회)</p>
         </div>
         <div class="tile">
-          <div class="ic">🔎</div>
           <h3>도서 둘러보기</h3>
           <p>회사가 보유한 <span class="hl">모든 책을 한눈에</span><br/>검색·카테고리로 빠르게 찾기.</p>
         </div>
       </div>
 
       <!-- 대출하기 -->
-      <div class="sec-title"><span class="badge">②</span> 대출하기 📖</div>
+      <div class="sec-title"><span class="badge">②</span> 대출하기</div>
       <div class="flow">
         <div class="steps">
           <div class="step"><span class="n">1</span><span class="tx">로그인 후 원하는 <b>책을 선택</b></span></div>
@@ -179,7 +181,7 @@
       </div>
 
       <!-- 반납하기 -->
-      <div class="sec-title"><span class="badge">③</span> 반납하기 ↩️</div>
+      <div class="sec-title"><span class="badge">③</span> 반납하기</div>
       <div class="flow">
         <div class="steps">
           <div class="step"><span class="n">1</span><span class="tx">상단 메뉴 <b>[나의 책장 보기]</b></span></div>
@@ -200,9 +202,9 @@
 
       <!-- 안내 -->
       <div class="note">
-        💡 대출 기간은 <b>대출일 포함 14일</b>입니다. ·
-        기존에 책을 빌리고 계신 분은 대여 내역이 이미 등록되어 있어요 —
-        사내 이메일로 가입(비밀번호 설정)하면 <b>내 책장에서 바로</b> 확인됩니다.
+        <p>대출 기간은 <b>대출일 포함 14일</b>입니다.</p>
+        <p>기존에 책을 빌리고 계신 분은 대여 내역이 이미 등록되어 있어요
+          <span class="sub">- 사내 이메일로 가입(비밀번호 설정)하면 <b>내 책장에서 바로</b> 확인됩니다.</span></p>
       </div>
     </div>
 
