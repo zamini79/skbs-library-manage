@@ -46,7 +46,7 @@ type RentalRow = {
 function statusBadge(s: RentalRow["status"]) {
   if (s === "overdue") return <span className="badge-overdue">연체</span>;
   if (s === "returned") return <span className="badge-returned">반납완료</span>;
-  return <span className="badge-active">대여중</span>;
+  return <span className="badge-active">대출중</span>;
 }
 
 function fmtDate(iso: string): string {
@@ -183,7 +183,7 @@ export function RentalReturnTable({
     return (
       <div className="bg-muted rounded-md p-12 text-center text-sm text-muted-foreground">
         <div className="text-2xl mb-2">📭</div>
-        해당하는 대여 record가 없습니다.
+        해당하는 대출 record가 없습니다.
       </div>
     );
   }
@@ -198,7 +198,7 @@ export function RentalReturnTable({
       <div className="flex items-center gap-3 mb-3">
         <Input
           type="search"
-          placeholder="제목 또는 대여자 검색"
+          placeholder="제목 또는 대출자 검색"
           value={searchQ}
           onChange={(e) => setSearchQ(e.target.value)}
           className="max-w-xs"
@@ -246,7 +246,7 @@ export function RentalReturnTable({
                   onClick={() => toggleSort("user")}
                   className={headerBtn}
                 >
-                  대여자{sortIcon("user")}
+                  대출자{sortIcon("user")}
                 </button>
               </TableHead>
               <TableHead className="w-28 whitespace-nowrap">
@@ -255,7 +255,7 @@ export function RentalReturnTable({
                   onClick={() => toggleSort("rented")}
                   className={headerBtn}
                 >
-                  대여일{sortIcon("rented")}
+                  대출일{sortIcon("rented")}
                 </button>
               </TableHead>
               <TableHead className="w-28 whitespace-nowrap">
@@ -368,7 +368,7 @@ export function RentalReturnTable({
                   <span className="font-medium">{target.book?.title}</span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">대여자: </span>
+                  <span className="text-muted-foreground">대출자: </span>
                   <span className="font-medium">{target.user?.name}</span>
                   <span className="text-muted-foreground"> ({target.user?.employee_no})</span>
                 </div>

@@ -32,10 +32,10 @@ const SECTIONS: SidebarSection[] = [
     ],
   },
   {
-    title: "대여",
+    title: "대출",
     items: [
-      { href: "/admin/rentals/new", label: "대여 등록" },
-      { href: "/admin/rentals/return", label: "대여 목록" },
+      { href: "/admin/rentals/new", label: "대출 등록" },
+      { href: "/admin/rentals/return", label: "대출 목록" },
       { href: "/admin/rentals/overdue", label: "연체 목록" },
       { href: "/admin/notifications", label: "알림 발송 이력" },
     ],

@@ -14,8 +14,8 @@ import {
 
 const STATUS_OPTIONS = [
   { value: "all", label: "전체 상태" },
-  { value: "available", label: "대여 가능" },
-  { value: "rented", label: "대여 중" },
+  { value: "available", label: "대출 가능" },
+  { value: "rented", label: "대출 중" },
   { value: "disposed", label: "폐기" },
 ];
 

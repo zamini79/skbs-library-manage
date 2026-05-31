@@ -54,8 +54,8 @@ const REASON_OPTIONS = [
 function statusBadge(book: Pick<Book, "status" | "available_quantity">) {
   if (book.status === "disposed") return <span className="badge-returned">폐기</span>;
   if (book.available_quantity > 0)
-    return <span className="badge-available">대여 가능</span>;
-  return <span className="badge-active">대여 중</span>;
+    return <span className="badge-available">대출 가능</span>;
+  return <span className="badge-active">대출 중</span>;
 }
 
 export function BooksTable({ books }: { books: Book[] }) {
@@ -89,7 +89,7 @@ export function BooksTable({ books }: { books: Book[] }) {
   }
 
   const displayed = useMemo(() => {
-    // 상태 정렬 키: 가용=0 / 대여중=1 / 폐기=2
+    // 상태 정렬 키: 가용=0 / 대출중=1 / 폐기=2
     const statusKey = (b: Book): number => {
       if (b.status === "disposed") return 2;
       return b.available_quantity > 0 ? 0 : 1;
@@ -316,7 +316,7 @@ export function BooksTable({ books }: { books: Book[] }) {
                           !canSelect
                             ? book.status === "disposed"
                               ? "이미 폐기됨"
-                              : "대여 중인 책은 폐기할 수 없습니다"
+                              : "대출 중인 책은 폐기할 수 없습니다"
                             : undefined
                         }
                       />

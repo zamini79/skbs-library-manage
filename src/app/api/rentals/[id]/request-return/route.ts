@@ -1,4 +1,4 @@
-// POST   /api/rentals/[id]/request-return — 본인 active/overdue 대여를 "반납 대기"로 요청
+// POST   /api/rentals/[id]/request-return — 본인 active/overdue 대출를 "반납 대기"로 요청
 // DELETE /api/rentals/[id]/request-return — 본인 반납 요청(아직 미확정) 취소
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";

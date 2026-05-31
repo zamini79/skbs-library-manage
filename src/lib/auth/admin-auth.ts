@@ -116,7 +116,7 @@ export async function requireMaster(): Promise<AdminTokenPayload> {
 }
 
 export function adminRoleLabel(role: AdminRole): string {
-  return role === "master" ? "마스터 관리자" : "대여 관리자";
+  return role === "master" ? "마스터 관리자" : "대출 관리자";
 }
 
 /**

@@ -1,4 +1,4 @@
-// GET /api/admin/books/search?q=... — 가용 도서 검색 (대여 등록용)
+// GET /api/admin/books/search?q=... — 가용 도서 검색 (대출 등록용)
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getAnyOrError } from "@/lib/auth/admin-auth";

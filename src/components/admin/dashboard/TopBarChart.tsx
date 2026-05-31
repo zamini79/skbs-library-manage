@@ -49,7 +49,7 @@ export function TopBarChart({
               tickLine={false}
             />
             <Tooltip
-              formatter={(value) => [`${value}${unit}`, "대여"]}
+              formatter={(value) => [`${value}${unit}`, "대출"]}
               contentStyle={{
                 background: "hsl(var(--card))",
                 border: "1px solid hsl(var(--border))",

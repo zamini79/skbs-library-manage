@@ -127,7 +127,7 @@ export default async function AdminDashboardPage() {
                 대기 중입니다.
               </div>
               <div className="text-sm text-muted-foreground">
-                대여 등록 페이지에서 승인 또는 반려를 처리해주세요.
+                대출 등록 페이지에서 승인 또는 반려를 처리해주세요.
               </div>
             </div>
             <span className="text-sm font-medium text-primary shrink-0">
@@ -163,36 +163,36 @@ export default async function AdminDashboardPage() {
 
       <section className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <KpiCard label="전체 도서" value={booksRes.count ?? 0} variant="accent" />
-        <KpiCard label="대여 중" value={activeRes.count ?? 0} />
+        <KpiCard label="대출 중" value={activeRes.count ?? 0} />
         <KpiCard
           label="연체"
           value={overdueRes.count ?? 0}
           variant="danger"
         />
         <KpiCard
-          label="이번 달 신규 대여"
+          label="이번 달 신규 대출"
           value={monthlyRes.count ?? 0}
           delta="매월 1일 리셋"
         />
       </section>
 
       <section className="grid lg:grid-cols-2 gap-4">
-        <TopBarChart title="개인별 대여 TOP 10" data={topUsers} />
-        <TopBarChart title="도서별 대여 TOP 10" data={topBooks} />
+        <TopBarChart title="개인별 대출 TOP 10" data={topUsers} />
+        <TopBarChart title="도서별 대출 TOP 10" data={topBooks} />
       </section>
 
       <section className="grid lg:grid-cols-2 gap-4">
         <RentalListPanel
-          title="최근 대여 내역"
+          title="최근 대출 내역"
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           rentals={(recentRes.data ?? []) as any}
-          emptyText="대여 내역이 없습니다"
+          emptyText="대출 내역이 없습니다"
         />
         <RentalListPanel
           title="연체 목록"
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           rentals={(overdueListRes.data ?? []) as any}
-          emptyText="연체된 대여가 없습니다"
+          emptyText="연체된 대출가 없습니다"
           showStatus={false}
         />
       </section>

@@ -1,4 +1,4 @@
-// GET /api/admin/users/search?q=... — 활성 사용자 검색 (대여 등록용)
+// GET /api/admin/users/search?q=... — 활성 사용자 검색 (대출 등록용)
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getAnyOrError } from "@/lib/auth/admin-auth";

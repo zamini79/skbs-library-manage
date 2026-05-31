@@ -1,4 +1,4 @@
-// 반납 처리 — 활성 + 연체 대여 모두 조회
+// 반납 처리 — 활성 + 연체 대출 모두 조회
 import { requireAny } from "@/lib/auth/admin-auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { RentalReturnTable } from "@/components/admin/RentalReturnTable";
@@ -28,9 +28,9 @@ export default async function AdminRentalsReturnPage() {
   return (
     <div className="space-y-5">
       <header>
-        <h1 className="text-3xl font-bold tracking-tight">대여 목록</h1>
+        <h1 className="text-3xl font-bold tracking-tight">대출 목록</h1>
         <p className="text-md text-muted-foreground mt-1">
-          현재 대여 중 또는 연체 상태인 도서{" "}
+          현재 대출 중 또는 연체 상태인 도서{" "}
           <span className="font-mono font-medium text-foreground">
             {rentals?.length ?? 0}
           </span>

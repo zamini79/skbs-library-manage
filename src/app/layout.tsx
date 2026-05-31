@@ -26,7 +26,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "SK Bioscience 사내 도서관",
-  description: "구성원 도서 대여 시스템",
+  description: "구성원 도서 대출 시스템",
 };
 
 // iOS Safari가 입력 focus 시 자동 확대 후 페이지 이동 시 확대 상태가 남는 문제 방지.

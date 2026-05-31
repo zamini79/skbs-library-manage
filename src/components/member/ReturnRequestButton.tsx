@@ -36,9 +36,9 @@ export function ReturnRequestButton({
       const json = await res.json().catch(() => ({}));
       if (!res.ok || !json.ok) {
         const map: Record<string, string> = {
-          ALREADY_REQUESTED: "이미 반납 요청된 대여입니다.",
+          ALREADY_REQUESTED: "이미 반납 요청된 대출입니다.",
           NOT_REQUESTED: "취소할 반납 요청이 없습니다.",
-          ALREADY_PROCESSED: "이미 처리된 대여입니다.",
+          ALREADY_PROCESSED: "이미 처리된 대출입니다.",
         };
         setError(
           map[json?.error] ||

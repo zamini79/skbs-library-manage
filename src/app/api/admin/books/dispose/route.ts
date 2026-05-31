@@ -1,7 +1,7 @@
 // POST /api/admin/books/dispose
 // Body: { ids: string[], reason: 'lost'|'damaged'|'outdated'|'other' }
 //
-// 정책: master 권한만, 대여 중인 책(available_quantity < total_quantity)은 폐기 불가.
+// 정책: master 권한만, 대출 중인 책(available_quantity < total_quantity)은 폐기 불가.
 // 응답: { ok, disposed: number, skipped: Array<{id, reason}> }
 import { NextResponse } from "next/server";
 import { z } from "zod";

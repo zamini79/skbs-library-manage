@@ -17,7 +17,7 @@ function fmtDate(iso: string) {
 function statusBadge(s: Rental["status"]) {
   if (s === "overdue") return <span className="badge-overdue">연체</span>;
   if (s === "returned") return <span className="badge-returned">반납</span>;
-  return <span className="badge-active">대여중</span>;
+  return <span className="badge-active">대출중</span>;
 }
 
 export function RentalListPanel({

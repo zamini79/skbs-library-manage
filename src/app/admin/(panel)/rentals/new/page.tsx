@@ -32,10 +32,10 @@ export default async function AdminRentalsNewPage() {
   return (
     <div className="space-y-8">
       <header>
-        <h1 className="text-3xl font-bold tracking-tight">대여 등록</h1>
+        <h1 className="text-3xl font-bold tracking-tight">대출 등록</h1>
         <p className="text-md text-muted-foreground mt-1">
           사용자가 신청한 대출은 아래 목록에서 승인·반려하거나, 아래에서 직접
-          새 대여를 등록할 수 있습니다.
+          새 대출를 등록할 수 있습니다.
         </p>
       </header>
 
@@ -50,7 +50,7 @@ export default async function AdminRentalsNewPage() {
       </section>
 
       <section className="space-y-3 pt-2 border-t">
-        <h2 className="text-xl font-semibold pt-4">직접 대여 등록</h2>
+        <h2 className="text-xl font-semibold pt-4">직접 대출 등록</h2>
         <RentalNewForm />
       </section>
     </div>

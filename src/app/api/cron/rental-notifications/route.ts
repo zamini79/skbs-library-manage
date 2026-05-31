@@ -1,8 +1,8 @@
 // GET /api/cron/rental-notifications — Vercel Cron 일일 호출 (매일 09:00 KST = 00:00 UTC)
 //
 // 동작:
-//   1) status active/overdue 인 모든 대여를 사용자/책 정보와 함께 조회
-//   2) 각 대여마다 KST 기준 day diff = (due_date::date - today::date)
+//   1) status active/overdue 인 모든 대출를 사용자/책 정보와 함께 조회
+//   2) 각 대출마다 KST 기준 day diff = (due_date::date - today::date)
 //        2  → due_2  "X일 남았어요"
 //        1  → due_1
 //        0  → due_0
@@ -76,10 +76,10 @@ function buildEmail(
 
   if (type === "overdue") {
     const overdueDays = Math.abs(diff);
-    const subject = `[사내 도서관] '${title}' 대여 ${overdueDays}일 연체 중`;
+    const subject = `[사내 도서관] '${title}' 대출 ${overdueDays}일 연체 중`;
     const text = `${displayName},
 
-대여 중이신 도서 '${title}'의 대여기간이 만료되어 ${overdueDays}일 연체되고 있습니다.
+대출 중이신 도서 '${title}'의 대출기간이 만료되어 ${overdueDays}일 연체되고 있습니다.
 반납기한: ${dueKst}
 
 빠른 시일 내 반납 부탁드립니다.
@@ -93,11 +93,11 @@ function buildEmail(
   const headline =
     remaining === 0
       ? "오늘이 반납기한입니다"
-      : `대여기간이 ${remaining}일 남았습니다`;
+      : `대출기간이 ${remaining}일 남았습니다`;
   const subject = `[사내 도서관] '${title}' ${headline}`;
   const text = `${displayName},
 
-대여 중이신 도서 '${title}'의 ${headline}.
+대출 중이신 도서 '${title}'의 ${headline}.
 반납기한: ${dueKst}
 
 기한 내 반납 부탁드립니다.
@@ -123,7 +123,7 @@ export async function GET(req: Request) {
 
   const supabase = createAdminClient();
 
-  // 대상 대여 조회 — active/overdue 만, 사용자/책 정보 join
+  // 대상 대출 조회 — active/overdue 만, 사용자/책 정보 join
   const { data: rentals, error: rErr } = await supabase
     .from("rentals")
     .select(

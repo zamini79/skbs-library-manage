@@ -1,4 +1,4 @@
-// GET /api/admin/rentals/check?user_id=&book_id= — 대여 가능 여부 검증 (RPC 위임)
+// GET /api/admin/rentals/check?user_id=&book_id= — 대출 가능 여부 검증 (RPC 위임)
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getAnyOrError } from "@/lib/auth/admin-auth";

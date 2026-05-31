@@ -134,7 +134,7 @@ export default async function NotificationsPage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">알림 발송 이력</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          매일 09:00 KST cron 이 발송한 대여 만료/연체 알림 메일 이력입니다.
+          매일 09:00 KST cron 이 발송한 대출 만료/연체 알림 메일 이력입니다.
         </p>
       </div>
 

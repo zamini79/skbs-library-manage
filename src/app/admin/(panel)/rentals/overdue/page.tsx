@@ -27,7 +27,7 @@ export default async function AdminRentalsOverduePage() {
       <header>
         <h1 className="text-3xl font-bold tracking-tight">연체 목록</h1>
         <p className="text-md text-muted-foreground mt-1">
-          연체 상태로 분류된 대여{" "}
+          연체 상태로 분류된 대출{" "}
           <span className="font-mono font-medium text-foreground">
             {rentals?.length ?? 0}
           </span>

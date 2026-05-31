@@ -8,7 +8,7 @@ import type { AdminRole } from "@/lib/policies";
 
 const ROLE_LABEL: Record<AdminRole, string> = {
   master: "마스터 관리자",
-  book: "대여 관리자",
+  book: "대출 관리자",
 };
 
 export function TopBar({

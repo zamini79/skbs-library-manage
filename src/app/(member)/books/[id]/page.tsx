@@ -149,7 +149,7 @@ export default async function BookDetailPage({
                 {book.price.toLocaleString()}원
               </dd>
 
-              <dt className="text-ink-muted">누적 대여</dt>
+              <dt className="text-ink-muted">누적 대출</dt>
               <dd className="font-mono tabular text-ink">
                 {rentalCount ?? 0}회
               </dd>
@@ -258,7 +258,7 @@ export default async function BookDetailPage({
               </dd>
             </div>
             <div className="flex justify-between py-[10px] border-b border-line">
-              <dt>누적 대여</dt>
+              <dt>누적 대출</dt>
               <dd className="text-ink font-mono tabular">
                 {rentalCount ?? 0}회
               </dd>

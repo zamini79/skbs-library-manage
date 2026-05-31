@@ -1,4 +1,4 @@
-// POST /api/admin/rentals — 대여 등록 (master/book 둘 다)
+// POST /api/admin/rentals — 대출 등록 (master/book 둘 다)
 // Body: { user_id, book_id }
 // 1) check_rental_eligibility로 정책 재검증 (UI 우회 차단)
 // 2) INSERT rentals — trigger가 books.available_quantity 자동 감소

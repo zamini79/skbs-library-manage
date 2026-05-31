@@ -1,4 +1,4 @@
-// 내 대여현황 — 로그인 필수. RLS rentals_select_own로 본인 데이터만 자동 필터링.
+// 내 대출현황 — 로그인 필수. RLS rentals_select_own로 본인 데이터만 자동 필터링.
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -189,7 +189,7 @@ export default async function MyRentalsPage() {
           </div>
         </div>
         <div className={statCardClass}>
-          <div className={statLabelClass}>이번 달 대여</div>
+          <div className={statLabelClass}>이번 달 대출</div>
           <div className={statValueClass}>
             {monthlyCount}
             <span className={statSubClass}>
@@ -266,13 +266,13 @@ export default async function MyRentalsPage() {
         </section>
       )}
 
-      {/* 현재 대여 중 */}
+      {/* 현재 대출 중 */}
       <section className="space-y-3">
-        <h2 className="font-serif text-xl font-bold text-ink">현재 대여 중</h2>
+        <h2 className="font-serif text-xl font-bold text-ink">현재 대출 중</h2>
         {activeRentals.length === 0 ? (
           <div className="bg-paper border border-line rounded-md p-8 text-center text-sm text-ink-muted space-y-2">
             <div className="text-2xl">📚</div>
-            <div>현재 대여 중인 도서가 없습니다.</div>
+            <div>현재 대출 중인 도서가 없습니다.</div>
           </div>
         ) : (
           <ul className="bg-paper border border-line rounded-md divide-y divide-line">
@@ -297,7 +297,7 @@ export default async function MyRentalsPage() {
                     >
                       <div className="flex items-center gap-2">
                         <span className="inline-block w-14 shrink-0">
-                          대여날짜
+                          대출날짜
                         </span>
                         <span className="font-mono tabular">
                           {fmtDate(r.rented_at)}
@@ -343,11 +343,11 @@ export default async function MyRentalsPage() {
       {/* 과거 이력 */}
       <section className="space-y-3">
         <h2 className="font-serif text-[17px] md:text-xl font-bold text-ink">
-          대여 이력
+          대출 이력
         </h2>
         {history.length === 0 ? (
           <div className="bg-paper border border-line rounded-md p-6 text-center text-sm text-ink-muted">
-            반납 완료된 대여가 없습니다.
+            반납 완료된 대출가 없습니다.
           </div>
         ) : (
           <>
@@ -387,7 +387,7 @@ export default async function MyRentalsPage() {
                       {r.book?.author}
                     </div>
                     <div className="text-xs text-ink-muted">
-                      대여{" "}
+                      대출{" "}
                       <span className="font-mono tabular">
                         {fmtDate(r.rented_at)}
                       </span>{" "}
@@ -407,10 +407,10 @@ export default async function MyRentalsPage() {
 
       {/* 정책 */}
       <section className="bg-paper border border-line rounded-md p-4 text-xs text-ink-soft space-y-1">
-        <div className="font-medium text-ink mb-2">대여 정책</div>
-        <div>대여 기간: {RENTAL_POLICY.RENTAL_PERIOD_DAYS}일</div>
+        <div className="font-medium text-ink mb-2">대출 정책</div>
+        <div>대출 기간: {RENTAL_POLICY.RENTAL_PERIOD_DAYS}일</div>
         <div>
-          월 최대 대여: {RENTAL_POLICY.MAX_MONTHLY_RENTALS}회 (매월 1일 리셋)
+          월 최대 대출: {RENTAL_POLICY.MAX_MONTHLY_RENTALS}회 (매월 1일 리셋)
         </div>
         <div>동시 보유: 최대 {RENTAL_POLICY.MAX_CONCURRENT_HOLDINGS}권</div>
         <div>마일리지: 정상 반납 +10점 · 연체 반납 -5점</div>

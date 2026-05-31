@@ -102,7 +102,7 @@ export function DeleteAccountDialog({
               </DialogTitle>
               <DialogDescription className="pt-2 space-y-2">
                 <span className="block">
-                  탈퇴 후에는 회원 정보, 마일리지, 대여 이력 등 모든 정보가
+                  탈퇴 후에는 회원 정보, 마일리지, 대출 이력 등 모든 정보가
                   복구할 수 없도록 영구 삭제됩니다.
                 </span>
                 <span className="block font-semibold text-ink">

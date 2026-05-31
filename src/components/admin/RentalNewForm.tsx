@@ -142,7 +142,7 @@ export function RentalNewForm() {
         error?: string;
       };
       if (!res.ok || !data.ok) {
-        setSubmitError(data.error || "대여 처리 실패");
+        setSubmitError(data.error || "대출 처리 실패");
         return;
       }
       setSuccess({ id: data.id!, due_date: data.due_date! });
@@ -169,7 +169,7 @@ export function RentalNewForm() {
     return (
       <div className="bg-card border rounded-md p-8 text-center space-y-4 max-w-lg">
         <div className="text-4xl">✓</div>
-        <h2 className="text-xl font-bold">대여 처리 완료</h2>
+        <h2 className="text-xl font-bold">대출 처리 완료</h2>
         <div className="text-sm text-muted-foreground space-y-1">
           <div>
             반납기한:{" "}
@@ -180,7 +180,7 @@ export function RentalNewForm() {
           <div className="font-mono text-xs">rental_id: {success.id}</div>
         </div>
         <div className="flex gap-2 justify-center pt-2">
-          <Button onClick={reset}>새 대여 등록</Button>
+          <Button onClick={reset}>새 대출 등록</Button>
           <Button variant="outline" onClick={() => router.push("/admin/dashboard")}>
             대시보드로
           </Button>
@@ -246,7 +246,7 @@ export function RentalNewForm() {
 
       {/* 우측: 사용자 검색 */}
       <div className="space-y-3">
-        <Label htmlFor="user-q">대여자 검색</Label>
+        <Label htmlFor="user-q">대출자 검색</Label>
         {selectedUser ? (
           <div className="bg-card border rounded-md p-4 space-y-1">
             <div className="font-medium">{selectedUser.name}</div>
@@ -298,7 +298,7 @@ export function RentalNewForm() {
       <div className="lg:col-span-2">
         {!selectedBook || !selectedUser ? (
           <div className="bg-muted rounded-md p-6 text-center text-sm text-muted-foreground">
-            도서와 대여자를 모두 선택하면 정책 검증 결과가 표시됩니다.
+            도서와 대출자를 모두 선택하면 정책 검증 결과가 표시됩니다.
           </div>
         ) : eligLoading ? (
           <div className="bg-card border rounded-md p-6 text-center text-sm text-muted-foreground">
@@ -313,7 +313,7 @@ export function RentalNewForm() {
                   elig.eligible ? "badge-available text-sm" : "badge-overdue text-sm"
                 }
               >
-                {elig.eligible ? "대여 가능" : "대여 불가"}
+                {elig.eligible ? "대출 가능" : "대출 불가"}
               </span>
             </div>
             <ul className="space-y-2">
@@ -321,7 +321,7 @@ export function RentalNewForm() {
               <Check ok={elig.book_available} label="도서 가용 수량 > 0" />
               <Check
                 ok={elig.monthly_remaining > 0}
-                label={`이번 달 대여 잔여 ${elig.monthly_remaining}회 (현재 ${elig.monthly_count}/2)`}
+                label={`이번 달 대출 잔여 ${elig.monthly_remaining}회 (현재 ${elig.monthly_count}/2)`}
               />
               <Check
                 ok={elig.holding_remaining > 0}
@@ -346,7 +346,7 @@ export function RentalNewForm() {
 
             <div className="flex gap-2 pt-2">
               <Button onClick={onSubmit} disabled={!elig.eligible || submitting}>
-                {submitting ? "처리 중..." : "대여 처리"}
+                {submitting ? "처리 중..." : "대출 처리"}
               </Button>
               <Button variant="outline" onClick={reset} disabled={submitting}>
                 초기화
