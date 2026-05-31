@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SK bioscience 사내 도서관 — 이용 안내</title>
+<style>
+  /* 브랜드 토큰 (앱 globals.css 와 동일) */
+  :root{
+    --bg:#f5ecdc; --paper:#fbf6ea; --paper-warm:#f1e6cf;
+    --ink:#2a1d10; --ink-soft:#5a4633; --ink-muted:#8a7860;
+    --line:#d9c8a9; --accent:#7c3a1d; --accent-soft:#c97b4e;
+    --ok:#4a7a3a; --ok-soft:#e7f0d8; --busy:#a86133;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:#cfc0a4; padding:32px 16px;
+    font-family:"Malgun Gothic","맑은 고딕","Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    color:var(--ink); -webkit-font-smoothing:antialiased;
+  }
+  /* 캡처 대상: 이 .card 영역을 스크린샷 하세요 (760px 고정폭) */
+  .card{
+    width:760px; margin:0 auto; background:var(--bg);
+    border-radius:24px; overflow:hidden;
+    box-shadow:0 24px 60px rgba(42,29,16,.28);
+  }
+  /* ── 헤더 ── */
+  .hero{
+    background:linear-gradient(150deg,#7c3a1d 0%,#9a4a26 55%,#c97b4e 130%);
+    color:#fbf6ea; padding:44px 48px 40px; position:relative;
+  }
+  .hero .kicker{font-size:13px; letter-spacing:.32em; opacity:.8; font-weight:700;}
+  .hero h1{
+    font-family:"Noto Serif KR",serif; font-weight:800;
+    font-size:40px; line-height:1.18; margin-top:14px; letter-spacing:-.5px;
+    text-wrap:balance;
+  }
+  .hero .emoji{font-size:46px; display:block; margin-bottom:6px;}
+  .hero .access{
+    margin-top:22px; display:inline-flex; align-items:center; gap:10px;
+    background:rgba(251,246,234,.16); border:1px solid rgba(251,246,234,.35);
+    padding:11px 18px; border-radius:999px; font-size:16px; font-weight:600;
+  }
+  .hero .access b{font-weight:800;}
+  .hero .phone-note{
+    position:absolute; right:40px; bottom:36px;
+    font-size:13px; opacity:.85; text-align:right; line-height:1.5;
+  }
+  /* ── 본문 ── */
+  .body{padding:38px 48px 10px;}
+  .sec-title{
+    display:flex; align-items:center; gap:12px;
+    font-family:"Noto Serif KR",serif; font-weight:800; font-size:24px;
+    color:var(--accent); margin:30px 0 18px;
+  }
+  .sec-title .badge{
+    width:36px; height:36px; border-radius:10px; background:var(--accent);
+    color:#fbf6ea; font-size:20px; display:flex; align-items:center; justify-content:center;
+  }
+  /* 시작하기 2칸 */
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .tile{
+    background:var(--paper); border:1px solid var(--line); border-radius:16px;
+    padding:20px 22px;
+  }
+  .tile .ic{font-size:28px;}
+  .tile h3{font-size:18px; margin:10px 0 6px; font-weight:800;}
+  .tile p{font-size:14.5px; color:var(--ink-soft); line-height:1.55;}
+  .tile .hl{color:var(--accent); font-weight:800;}
+  /* 단계 흐름 */
+  .flow{
+    background:var(--paper); border:1px solid var(--line); border-radius:18px;
+    padding:24px 26px; display:flex; gap:22px; align-items:center;
+  }
+  .steps{flex:1; display:flex; flex-direction:column; gap:16px;}
+  .step{display:flex; gap:14px; align-items:flex-start;}
+  .step .n{
+    flex:none; width:30px; height:30px; border-radius:50%;
+    background:var(--accent); color:#fbf6ea; font-weight:800; font-size:15px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .step .tx{font-size:16px; line-height:1.5; padding-top:3px;}
+  .step .tx b{color:var(--accent);}
+  .step .tx .desk{color:var(--ok); font-weight:800;}
+  /* 미니 폰 목업 */
+  .phone{
+    flex:none; width:150px; height:300px; background:var(--ink);
+    border-radius:26px; padding:9px; box-shadow:0 10px 24px rgba(42,29,16,.25);
+  }
+  .phone .scr{
+    width:100%; height:100%; background:var(--bg); border-radius:18px;
+    overflow:hidden; display:flex; flex-direction:column;
+  }
+  .phone .top{
+    background:var(--paper); border-bottom:1px solid var(--line);
+    padding:8px 10px; font-size:9px; font-weight:800; color:var(--accent);
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .phone .top .menu{color:var(--ink-muted); font-weight:700;}
+  .phone .area{padding:10px; flex:1; display:flex; flex-direction:column; gap:7px;}
+  .covers{display:grid; grid-template-columns:1fr 1fr; gap:6px;}
+  .cv{height:46px; border-radius:5px;}
+  .cv:nth-child(1){background:#3d2a18;} .cv:nth-child(2){background:#1f3a3a;}
+  .cv:nth-child(3){background:#2d3a1f;} .cv:nth-child(4){background:#3a2818;}
+  .pbtn{
+    margin-top:auto; background:var(--accent); color:#fbf6ea;
+    border-radius:8px; text-align:center; padding:9px; font-size:11px; font-weight:800;
+  }
+  .pbtn.ret{background:var(--busy);}
+  .prow{display:flex; align-items:center; gap:6px; background:var(--paper);
+    border:1px solid var(--line); border-radius:7px; padding:6px;}
+  .prow .mini{width:24px; height:32px; border-radius:3px; background:#3d2a18; flex:none;}
+  .prow .ml{font-size:8.5px; color:var(--ink-soft); line-height:1.3;}
+  .prow .ml b{color:var(--ink); font-size:9.5px;}
+  .badge-av{font-size:8px; font-weight:800; color:#fff; background:var(--ok);
+    border-radius:999px; padding:2px 6px; align-self:flex-start;}
+  /* 안내 박스 */
+  .note{
+    margin:26px 0 4px; background:var(--paper-warm); border:1px solid var(--line);
+    border-radius:14px; padding:18px 22px; font-size:14.5px; color:var(--ink-soft);
+    line-height:1.65;
+  }
+  .note b{color:var(--accent);}
+  /* 푸터 */
+  .foot{
+    background:var(--ink); color:#e9dcc4; padding:22px 48px;
+    font-size:13.5px; display:flex; justify-content:space-between; align-items:center;
+    margin-top:30px;
+  }
+  .foot .brand{font-family:"Noto Serif KR",serif; font-weight:800; color:#fbf6ea; font-size:16px;}
+</style>
+</head>
+<body>
+  <div class="card">
+
+    <!-- 헤더 -->
+    <div class="hero">
+      <span class="emoji">📚</span>
+      <div class="kicker">SK BIOSCIENCE LIBRARY · OPEN</div>
+      <h1>사내 도서관이<br/>스콘 속으로 들어왔어요</h1>
+      <div class="access">📱 <span><b>스콘</b> &gt; 업무 &gt; 시설/방문 &gt; <b>송도 도서관</b> 선택!</span></div>
+      <div class="phone-note">설치 없이<br/>모바일에서 바로</div>
+    </div>
+
+    <div class="body">
+
+      <!-- 시작하기 -->
+      <div class="sec-title"><span class="badge">①</span> 이렇게 시작하세요</div>
+      <div class="grid2">
+        <div class="tile">
+          <div class="ic">✉️</div>
+          <h3>회원가입</h3>
+          <p><span class="hl">사내 이메일(@sk.com)</span>로<br/>간편하게 가입하세요. (최초 1회)</p>
+        </div>
+        <div class="tile">
+          <div class="ic">🔎</div>
+          <h3>도서 둘러보기</h3>
+          <p>회사가 보유한 <span class="hl">모든 책을 한눈에</span><br/>검색·카테고리로 빠르게 찾기.</p>
+        </div>
+      </div>
+
+      <!-- 대출하기 -->
+      <div class="sec-title"><span class="badge">②</span> 대출하기 📖</div>
+      <div class="flow">
+        <div class="steps">
+          <div class="step"><span class="n">1</span><span class="tx">로그인 후 원하는 <b>책을 선택</b></span></div>
+          <div class="step"><span class="n">2</span><span class="tx"><b>[대출 신청]</b> 버튼 누르기</span></div>
+          <div class="step"><span class="n">3</span><span class="tx">책을 들고 <span class="desk">1층 안내데스크</span>에서<br/>확인받으면 대출 완료!</span></div>
+        </div>
+        <div class="phone">
+          <div class="scr">
+            <div class="top"><span>📚 도서관</span><span class="menu">☰</span></div>
+            <div class="area">
+              <div class="covers"><div class="cv"></div><div class="cv"></div><div class="cv"></div><div class="cv"></div></div>
+              <div class="pbtn">대출 신청</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 반납하기 -->
+      <div class="sec-title"><span class="badge">③</span> 반납하기 ↩️</div>
+      <div class="flow">
+        <div class="steps">
+          <div class="step"><span class="n">1</span><span class="tx">상단 메뉴 <b>[나의 책장 보기]</b></span></div>
+          <div class="step"><span class="n">2</span><span class="tx">대여 중인 책에서 <b>[반납]</b> 신청</span></div>
+          <div class="step"><span class="n">3</span><span class="tx">책을 들고 <span class="desk">1층 안내데스크</span>에서<br/>확인받으면 반납 완료!</span></div>
+        </div>
+        <div class="phone">
+          <div class="scr">
+            <div class="top"><span>나의 책장</span><span class="menu">✕</span></div>
+            <div class="area">
+              <div class="prow"><div class="mini"></div><div class="ml"><b>대여 중인 책</b><br/>반납기한 D-3</div></div>
+              <div class="prow"><div class="mini"></div><div class="ml"><b>대여 중인 책</b><br/>반납기한 D-9</div></div>
+              <div class="pbtn ret">반납</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 안내 -->
+      <div class="note">
+        💡 대출 기간은 <b>대출일 포함 14일</b>입니다. ·
+        기존에 책을 빌리고 계신 분은 대여 내역이 이미 등록되어 있어요 —
+        사내 이메일로 가입(비밀번호 설정)하면 <b>내 책장에서 바로</b> 확인됩니다.
+      </div>
+    </div>
+
+    <!-- 푸터 -->
+    <div class="foot">
+      <span class="brand">SK bioscience 사내 도서관</span>
+      <span>스콘에서 접속 · 모바일 전용</span>
+    </div>
+
+  </div>
+</body>
+</html>
