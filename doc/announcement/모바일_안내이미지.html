@@ -48,12 +48,13 @@
     font-size:13px; opacity:.85; text-align:right; line-height:1.5;
   }
   /* ── 본문 ── */
-  .body{padding:38px 48px 10px;}
+  .body{padding:18px 48px 10px;}
   .sec-title{
     display:flex; align-items:center; gap:12px;
     font-family:"Noto Serif KR",serif; font-weight:800; font-size:24px;
     color:var(--accent); margin:30px 0 18px;
   }
+  .body > .sec-title:first-child{margin-top:0;}
   .sec-title .badge{
     width:36px; height:36px; border-radius:10px; background:var(--accent);
     color:#fbf6ea; font-size:20px; display:flex; align-items:center; justify-content:center;
@@ -115,6 +116,17 @@
   .prow .ml b{color:var(--ink); font-size:9.5px;}
   .badge-av{font-size:8px; font-weight:800; color:#fff; background:var(--ok);
     border-radius:999px; padding:2px 6px; align-self:flex-start;}
+  /* 접속하기 */
+  .access-box{
+    background:var(--paper); border:1px solid var(--line); border-radius:18px;
+    padding:24px 26px; display:flex; gap:24px; align-items:center;
+  }
+  .access-box .access-desc{font-size:19px; line-height:1.5; flex:1;}
+  .access-box .access-desc b{color:var(--accent);}
+  .access-box .scone{
+    flex:none; width:248px; border:1px solid var(--line); border-radius:12px;
+    box-shadow:0 8px 20px rgba(42,29,16,.18); background:#fff;
+  }
   /* 안내 박스 */
   .note{
     margin:26px 0 4px; background:var(--paper-warm); border:1px solid var(--line);
@@ -142,14 +154,19 @@
     <div class="hero">
       <div class="kicker">SK BIOSCIENCE LIBRARY · OPEN</div>
       <h1><span class="htext">사내 도서관이<br/>스콘 속으로 들어왔어요</span><span class="emoji">📚</span></h1>
-      <div class="access"><span><b>스콘</b> &gt; 업무 &gt; 시설/방문 &gt; <b>송도 도서관</b> 선택!</span></div>
-      <div class="phone-note">설치 없이<br/>모바일에서 바로</div>
     </div>
 
     <div class="body">
 
+      <!-- 접속하기 -->
+      <div class="sec-title"><span class="badge">①</span> 사내 도서관 접속하기</div>
+      <div class="access-box">
+        <p class="access-desc"><b>스콘</b> &gt; 업무 &gt; 시설/방문 &gt; <b>송도 도서관</b> 선택</p>
+        <img class="scone" src="scone_송도도서관.png" alt="스콘 업무 > 시설/방문 > 송도 도서관 메뉴 화면" />
+      </div>
+
       <!-- 시작하기 -->
-      <div class="sec-title"><span class="badge">①</span> 이렇게 시작하세요</div>
+      <div class="sec-title"><span class="badge">②</span> 이렇게 시작하세요</div>
       <div class="grid2">
         <div class="tile">
           <h3>회원가입</h3>
@@ -162,7 +179,7 @@
       </div>
 
       <!-- 대출하기 -->
-      <div class="sec-title"><span class="badge">②</span> 대출하기</div>
+      <div class="sec-title"><span class="badge">③</span> 대출하기</div>
       <div class="flow">
         <div class="steps">
           <div class="step"><span class="n">1</span><span class="tx">로그인 후 원하는 <b>책을 선택</b></span></div>
@@ -181,7 +198,7 @@
       </div>
 
       <!-- 반납하기 -->
-      <div class="sec-title"><span class="badge">③</span> 반납하기</div>
+      <div class="sec-title"><span class="badge">④</span> 반납하기</div>
       <div class="flow">
         <div class="steps">
           <div class="step"><span class="n">1</span><span class="tx">상단 메뉴 <b>[나의 책장 보기]</b></span></div>
@@ -211,7 +228,7 @@
     <!-- 푸터 -->
     <div class="foot">
       <span class="brand">SK bioscience 사내 도서관</span>
-      <span>스콘에서 접속 · 모바일 전용</span>
+      <span>AX추진실</span>
     </div>
 
   </div>
