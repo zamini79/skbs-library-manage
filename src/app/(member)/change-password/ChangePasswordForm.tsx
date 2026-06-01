@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { Eye, EyeOff } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { LEGACY_TEMP_PASSWORD } from "@/lib/policies";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -17,9 +18,16 @@ const PasswordSchema = z
   .regex(/[0-9]/, "숫자를 1개 이상 포함해야 합니다.")
   .regex(/[^A-Za-z0-9]/, "특수문자를 1개 이상 포함해야 합니다.");
 
-export function ChangePasswordForm({ email }: { email: string }) {
+export function ChangePasswordForm({
+  email,
+  legacy = false,
+}: {
+  email: string;
+  // legacy=true (레거시 임시 비번 로그인): 현재 비밀번호 입력 생략, 임시 비번 자동 사용
+  legacy?: boolean;
+}) {
   const router = useRouter();
-  const [current, setCurrent] = useState("");
+  const [current, setCurrent] = useState(legacy ? LEGACY_TEMP_PASSWORD : "");
   const [next, setNext] = useState("");
   const [confirm, setConfirm] = useState("");
   const [showCurrent, setShowCurrent] = useState(false);
@@ -125,14 +133,15 @@ export function ChangePasswordForm({ email }: { email: string }) {
       onSubmit={onSubmit}
       className="space-y-4 bg-paper border border-line rounded-md p-6"
     >
-      {pwField(
-        "current",
-        "현재 비밀번호",
-        current,
-        setCurrent,
-        showCurrent,
-        setShowCurrent,
-      )}
+      {!legacy &&
+        pwField(
+          "current",
+          "현재 비밀번호",
+          current,
+          setCurrent,
+          showCurrent,
+          setShowCurrent,
+        )}
       {pwField(
         "next",
         "새 비밀번호",

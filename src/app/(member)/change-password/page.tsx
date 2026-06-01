@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { LEGACY_TEMP_PASSWORD } from "@/lib/policies";
 import { ChangePasswordForm } from "./ChangePasswordForm";
 
 export const dynamic = "force-dynamic";
@@ -33,15 +32,12 @@ export default async function ChangePasswordPage({
         <div className="text-sm bg-busy-soft border border-busy-border text-busy px-3 py-3 rounded-md space-y-1">
           <div className="font-semibold">임시 비밀번호로 로그인되었습니다.</div>
           <div className="text-xs text-ink-soft">
-            보안을 위해 지금 바로 비밀번호를 변경해 주세요. 아래{" "}
-            <b>현재 비밀번호</b>란에 임시 비밀번호{" "}
-            <span className="font-mono text-ink">{LEGACY_TEMP_PASSWORD}</span>를
-            입력하고, 새 비밀번호를 설정하시면 됩니다.
+            보안을 위해 지금 바로 새 비밀번호를 설정해 주세요.
           </div>
         </div>
       )}
 
-      <ChangePasswordForm email={user.email ?? ""} />
+      <ChangePasswordForm email={user.email ?? ""} legacy={fromLegacy} />
     </div>
   );
 }
