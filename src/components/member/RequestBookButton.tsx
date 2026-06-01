@@ -309,7 +309,9 @@ export function RequestBookButton({
             <DialogTitle>대출 신청이 완료되었습니다</DialogTitle>
             <DialogDescription className="pt-2 leading-relaxed">
               <span className="font-semibold text-ink">15분 안에 1층 안내데스크</span>로
-              방문해주세요! 15분이 지나면 신청이 자동 취소됩니다.
+              방문해주세요!
+              <br />
+              15분이 지나면 신청이 자동 취소됩니다.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
