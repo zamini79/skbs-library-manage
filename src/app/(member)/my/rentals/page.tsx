@@ -137,9 +137,8 @@ export default async function MyRentalsPage() {
   ]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const activeRentals: RentalRow[] = (activeRes.data ?? []) as any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const history: RentalRow[] = (historyRes.data ?? []) as any;
+  const activeRentals: RentalRow[] = (activeRes.data ?? []) as unknown as RentalRow[];
+  const history: RentalRow[] = (historyRes.data ?? []) as unknown as RentalRow[];
   const pendingRequests = (pendingRes.data ?? []) as unknown as Array<{
     id: string;
     requested_at: string;
