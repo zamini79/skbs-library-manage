@@ -26,7 +26,7 @@ export default function SignupPage() {
   const [error, setError] = useState<string | null>(null);
   const [alreadyRegistered, setAlreadyRegistered] = useState(false);
   const [importedNotice, setImportedNotice] = useState<
-    null | { state: "sending" | "sent" | "fail"; message?: string }
+    null | { state: "sending" | "fail"; message?: string }
   >(null);
   const [loading, setLoading] = useState(false);
 
@@ -167,19 +167,10 @@ export default function SignupPage() {
             }
           >
             <div className="font-semibold">
-              {importedNotice.state === "sending" && "비밀번호 재설정 메일 발송 중..."}
-              {importedNotice.state === "sent" && "기존 시스템에서 이관된 계정입니다."}
-              {importedNotice.state === "fail" && "메일 발송 실패"}
+              {importedNotice.state === "sending" && "가입 처리 중..."}
+              {importedNotice.state === "fail" && "가입 처리 실패"}
             </div>
             <div className="text-xs text-ink-soft">
-              {importedNotice.state === "sent" && (
-                <>
-                  비밀번호 재설정 메일을{" "}
-                  <span className="font-mono">{email}</span>로 발송했습니다.
-                  메일의 링크를 클릭하여 새 비밀번호를 설정하신 후 로그인해
-                  주세요. (스팸함도 확인)
-                </>
-              )}
               {importedNotice.state === "fail" && importedNotice.message}
             </div>
           </div>
@@ -194,7 +185,7 @@ export default function SignupPage() {
         <Button
           type="submit"
           className="w-full"
-          disabled={loading || alreadyRegistered || importedNotice?.state === "sent"}
+          disabled={loading || alreadyRegistered || importedNotice?.state === "sending"}
         >
           {loading ? "확인 중..." : "인증 코드 받기"}
         </Button>
