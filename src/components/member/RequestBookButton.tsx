@@ -68,6 +68,7 @@ export function RequestBookButton({
 }) {
   const router = useRouter();
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [successOpen, setSuccessOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -144,12 +145,17 @@ export function RequestBookButton({
         return;
       }
       setConfirmOpen(false);
-      router.refresh();
+      setSuccessOpen(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "네트워크 오류");
     } finally {
       setLoading(false);
     }
+  }
+
+  function closeSuccess() {
+    setSuccessOpen(false);
+    router.refresh();
   }
 
   async function cancelRequest() {
@@ -279,6 +285,21 @@ export function RequestBookButton({
                 {loading ? "신청 중..." : "신청"}
               </Button>
             )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={successOpen} onOpenChange={(o) => !o && closeSuccess()}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>대출 신청이 완료되었습니다</DialogTitle>
+            <DialogDescription className="pt-2 leading-relaxed">
+              <span className="font-semibold text-ink">15분 안에 1층 안내데스크</span>로
+              방문해주세요! 15분이 지나면 신청이 자동 취소됩니다.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={closeSuccess}>확인</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

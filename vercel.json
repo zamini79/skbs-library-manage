@@ -8,6 +8,10 @@
     {
       "path": "/api/cron/rental-notifications",
       "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/expire-requests",
+      "schedule": "*/5 * * * *"
     }
   ]
 }

@@ -378,7 +378,36 @@ END;
 $$ LANGUAGE plpgsql;
 
 COMMENT ON FUNCTION public.update_overdue_rentals IS
-  '매일 자정 Vercel Cron이 호출하여 반납기한 경과 대여를 연체 상태로 전환';
+  '매일 자정 Vercel Cron이 호출하여 반납기한 경과 대출을 연체 상태로 전환';
+
+-- 15분 경과 pending 대출 신청 자동 반려 (5분마다 Vercel Cron 호출)
+CREATE OR REPLACE FUNCTION public.expire_stale_rental_requests()
+RETURNS INTEGER AS $$
+DECLARE
+  v_admin_id UUID;
+  v_count INTEGER;
+BEGIN
+  SELECT id INTO v_admin_id FROM public.admins WHERE login_id = 'cs_admin@sk.com' LIMIT 1;
+  IF v_admin_id IS NULL THEN
+    SELECT id INTO v_admin_id FROM public.admins ORDER BY created_at LIMIT 1;
+  END IF;
+
+  UPDATE public.rental_requests
+     SET status = 'rejected',
+         processed_at = NOW(),
+         processed_by = v_admin_id,
+         reject_reason = '15분 경과 자동 취소',
+         updated_at = NOW()
+   WHERE status = 'pending'
+     AND requested_at < NOW() - INTERVAL '15 minutes';
+
+  GET DIAGNOSTICS v_count = ROW_COUNT;
+  RETURN v_count;
+END;
+$$ LANGUAGE plpgsql;
+
+COMMENT ON FUNCTION public.expire_stale_rental_requests IS
+  '15분 경과 pending 대출 신청을 rejected(자동 취소)로 전환. 5분마다 Vercel Cron 호출.';
 
 
 -- ====================

@@ -20,7 +20,7 @@ export async function POST(
   // 1) 요청 행 잠금 조회
   const { data: request, error: rErr } = await supabase
     .from("rental_requests")
-    .select("id, book_id, user_id, status")
+    .select("id, book_id, user_id, status, requested_at")
     .eq("id", params.id)
     .maybeSingle();
   if (rErr || !request) {
@@ -32,6 +32,24 @@ export async function POST(
   if (request.status !== "pending") {
     return NextResponse.json(
       { ok: false, error: "ALREADY_PROCESSED", status: request.status },
+      { status: 409 },
+    );
+  }
+  // 15분 경과 신청은 자동 취소 대상 — 승인 차단 (cron 반려 지연 대비)
+  const ageMs = Date.now() - new Date(request.requested_at).getTime();
+  if (ageMs > 15 * 60 * 1000) {
+    await supabase
+      .from("rental_requests")
+      .update({
+        status: "rejected",
+        processed_at: new Date().toISOString(),
+        processed_by: adminAuth.adminId,
+        reject_reason: "15분 경과 자동 취소",
+      })
+      .eq("id", request.id)
+      .eq("status", "pending");
+    return NextResponse.json(
+      { ok: false, error: "REQUEST_EXPIRED" },
       { status: 409 },
     );
   }
