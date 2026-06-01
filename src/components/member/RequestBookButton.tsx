@@ -254,10 +254,24 @@ export function RequestBookButton({
             <DialogTitle>
               {reasons.length > 0 ? "대출 신청 불가" : "대출 신청 확인"}
             </DialogTitle>
-            <DialogDescription className="pt-2">
-              {reasons.length > 0
-                ? "아래 사유로 지금은 대출을 신청할 수 없습니다."
-                : `"${bookTitle}"을(를) 대출 신청하시겠습니까? 관리자 승인 후 대출이 확정됩니다.`}
+            <DialogDescription className="pt-2 leading-relaxed">
+              {reasons.length > 0 ? (
+                "아래 사유로 지금은 대출을 신청할 수 없습니다."
+              ) : (
+                <>
+                  &ldquo;{bookTitle}&rdquo;을(를) 대출 신청하시겠습니까?
+                  <br />
+                  <br />
+                  관리자 승인 후 대출이 확정됩니다.
+                  <br />
+                  <br />
+                  <span className="font-semibold text-ink">
+                    15분 안에 1층 안내데스크에 방문하세요
+                  </span>
+                  <br />
+                  (15분 지나면 자동 반려됩니다)
+                </>
+              )}
             </DialogDescription>
           </DialogHeader>
           {reasons.length > 0 && (
