@@ -49,6 +49,9 @@ function VerifyForm() {
         );
         return;
       }
+      // 가입 직후 세션 유지 마커 — (member) 레이아웃의 member_remember 가드를 통과시켜야
+      // /signup/complete 로 정상 진입(미설정 시 /api/auth/expire 로 튕겨 가입 불가).
+      document.cookie = "member_remember=1; Path=/; SameSite=Lax";
       router.replace("/signup/complete");
       router.refresh();
     } catch (err) {
