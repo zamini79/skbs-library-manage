@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/client";
-import { RENTAL_POLICY } from "@/lib/policies";
+import { RENTAL_POLICY, LEGACY_TEMP_PASSWORD } from "@/lib/policies";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -54,18 +54,34 @@ export default function SignupPage() {
       const json = await res.json();
       if (json?.exists) {
         if (json.must_change_password) {
-          // 레거시 이관 계정 — Supabase 비밀번호 재설정 메일 발송
+          // 레거시 이관 계정 — 임시 비밀번호로 설정 후 자동 로그인 → 비밀번호 변경 유도
           setImportedNotice({ state: "sending" });
-          const supabase = createClient();
-          const { error: resetErr } = await supabase.auth.resetPasswordForEmail(
-            parsed.data.email,
-            { redirectTo: `${window.location.origin}/reset-password/update` },
-          );
-          if (resetErr) {
-            setImportedNotice({ state: "fail", message: resetErr.message });
-          } else {
-            setImportedNotice({ state: "sent" });
+          const tempRes = await fetch("/api/auth/legacy-temp-login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: parsed.data.email }),
+          });
+          const tempJson = await tempRes.json();
+          if (!tempRes.ok || !tempJson.ok) {
+            setImportedNotice({
+              state: "fail",
+              message: tempJson.error || "임시 로그인 처리 실패",
+            });
+            return;
           }
+          const supabase = createClient();
+          const { error: signinErr } = await supabase.auth.signInWithPassword({
+            email: parsed.data.email,
+            password: LEGACY_TEMP_PASSWORD,
+          });
+          if (signinErr) {
+            setImportedNotice({ state: "fail", message: signinErr.message });
+            return;
+          }
+          // (member) 레이아웃 가드 통과용 세션 마커
+          document.cookie = "member_remember=1; Path=/; SameSite=Lax";
+          router.replace("/change-password?from=legacy");
+          router.refresh();
           return;
         }
         setAlreadyRegistered(true);
