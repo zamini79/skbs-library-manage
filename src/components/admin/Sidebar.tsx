@@ -40,6 +40,10 @@ const SECTIONS: SidebarSection[] = [
       { href: "/admin/notifications", label: "알림 발송 이력" },
     ],
   },
+  {
+    title: "회원",
+    items: [{ href: "/admin/members", label: "회원 목록" }],
+  },
 ];
 
 export function Sidebar({
