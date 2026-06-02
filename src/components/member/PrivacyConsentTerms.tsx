@@ -32,8 +32,7 @@ export function PrivacyConsentTerms() {
                 보유·이용 기간
               </th>
               <td className="py-1.5 text-ink-soft">
-                동의일로부터 1년 (보유 기간 만료 전 회원 탈퇴 또는 동의 철회 시
-                즉시 파기)
+                동의일로부터 1년 (보유 기간 만료 전 동의 철회 시 즉시 파기)
               </td>
             </tr>
             <tr>
