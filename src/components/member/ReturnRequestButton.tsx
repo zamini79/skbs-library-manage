@@ -125,8 +125,9 @@ export function ReturnRequestButton({
               <br />
               <br />
               <span className="font-semibold text-ink">
-                참고로 관리자가 최종 확인하기 전까지는 대여(연체)기간이
-                유지됩니다.
+                참고로 관리자가 최종 확인하기 전까지는
+                <br />
+                대여(연체)기간이 유지됩니다.
               </span>
             </DialogDescription>
           </DialogHeader>
