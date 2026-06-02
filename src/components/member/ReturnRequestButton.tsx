@@ -119,9 +119,15 @@ export function ReturnRequestButton({
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle>반납 요청</DialogTitle>
-            <DialogDescription className="pt-2">
+            <DialogDescription className="pt-2 leading-relaxed">
               &quot;{bookTitle}&quot;을(를) 반납 처리 요청 하시겠습니까?
               관리자가 확인 후 최종 반납이 완료됩니다.
+              <br />
+              <br />
+              <span className="font-semibold text-ink">
+                참고로 관리자가 최종 확인하기 전까지는 대여(연체)기간이
+                유지됩니다.
+              </span>
             </DialogDescription>
           </DialogHeader>
           {error && (
