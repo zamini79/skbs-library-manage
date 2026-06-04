@@ -72,6 +72,9 @@ export function RentalReturnTable({
     was_overdue: boolean;
     mileage_delta: number;
   } | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<RentalRow | null>(null);
+  const [rejectSubmitting, setRejectSubmitting] = useState(false);
+  const [rejectError, setRejectError] = useState<string | null>(null);
   const [searchQ, setSearchQ] = useState("");
   // 기본 정렬: 반납 신청 들어온 건을 최상단(그 안에서 반납기한 이른 순).
   // 사용자가 컬럼 헤더를 누르면 해당 컬럼 정렬로 전환된다.
@@ -147,6 +150,34 @@ export function RentalReturnTable({
     setTarget(r);
     setResult(null);
     setError(null);
+  }
+
+  function openReject(r: RentalRow) {
+    setRejectTarget(r);
+    setRejectError(null);
+  }
+
+  async function onReject() {
+    if (!rejectTarget) return;
+    setRejectSubmitting(true);
+    setRejectError(null);
+    try {
+      const res = await fetch(
+        `/api/admin/rentals/${rejectTarget.id}/reject-return`,
+        { method: "POST" },
+      );
+      const data = (await res.json()) as { ok: boolean; error?: string };
+      if (!res.ok || !data.ok) {
+        setRejectError(data.error || "반려 처리 실패");
+        return;
+      }
+      setRejectTarget(null);
+      router.refresh();
+    } catch (e) {
+      setRejectError(e instanceof Error ? e.message : "네트워크 오류");
+    } finally {
+      setRejectSubmitting(false);
+    }
   }
 
   async function onConfirm() {
@@ -281,7 +312,7 @@ export function RentalReturnTable({
                   상태{sortIcon("status")}
                 </button>
               </TableHead>
-              <TableHead className="w-20 text-right">액션</TableHead>
+              <TableHead className="w-36 text-right">액션</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -337,13 +368,25 @@ export function RentalReturnTable({
                   </div>
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button
-                    size="sm"
-                    variant={r.return_requested_at ? "default" : "outline"}
-                    onClick={() => openDialog(r)}
-                  >
-                    {r.return_requested_at ? "반납 확인" : "반납"}
-                  </Button>
+                  <div className="flex justify-end gap-1.5">
+                    <Button
+                      size="sm"
+                      variant={r.return_requested_at ? "default" : "outline"}
+                      onClick={() => openDialog(r)}
+                    >
+                      {r.return_requested_at ? "반납 확인" : "반납"}
+                    </Button>
+                    {r.return_requested_at && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-destructive border-destructive/40 hover:bg-destructive-bg hover:text-destructive"
+                        onClick={() => openReject(r)}
+                      >
+                        반려
+                      </Button>
+                    )}
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
@@ -432,6 +475,44 @@ export function RentalReturnTable({
                 {submitting ? "처리 중..." : "반납 확정"}
               </Button>
             )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={!!rejectTarget}
+        onOpenChange={(o) => !o && setRejectTarget(null)}
+      >
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>반납 요청 반려</DialogTitle>
+            <DialogDescription className="pt-2 leading-relaxed">
+              &quot;{rejectTarget?.book?.title}&quot; (
+              {rejectTarget?.user?.name})의 반납 요청을 반려하시겠습니까?
+              <br />
+              대출은 반납 처리되지 않고 기존 상태(대출중/연체)로 유지됩니다.
+            </DialogDescription>
+          </DialogHeader>
+          {rejectError && (
+            <div className="p-3 rounded-md bg-destructive-bg text-destructive text-sm">
+              {rejectError}
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setRejectTarget(null)}
+              disabled={rejectSubmitting}
+            >
+              돌아가기
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={onReject}
+              disabled={rejectSubmitting}
+            >
+              {rejectSubmitting ? "처리 중..." : "반려 확정"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
