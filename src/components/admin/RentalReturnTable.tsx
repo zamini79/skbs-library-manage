@@ -240,9 +240,10 @@ export function RentalReturnTable({
         </span>
       </div>
 
-      <div className="bg-card border rounded-md overflow-hidden">
+      {/* 12행 높이까지만 표시, 초과분은 세로 스크롤 (shadcn Table 내부 래퍼를 스크롤 컨테이너로 사용) */}
+      <div className="bg-card border rounded-md overflow-hidden [&>div]:max-h-[890px] [&>div]:overflow-y-auto">
         <Table>
-          <TableHeader>
+          <TableHeader className="sticky top-0 z-10 bg-card">
             <TableRow>
               <TableHead className="min-w-[200px]">
                 <button
