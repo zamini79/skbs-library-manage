@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { BookFilters } from "@/components/admin/BookFilters";
 import { BooksTable } from "@/components/admin/BooksTable";
 
-const PAGE_SIZE = 25;
+const PAGE_SIZE = 12;
 
 function isCategory(v: string | undefined): v is BookCategory {
   return !!v && (BOOK_CATEGORIES as readonly string[]).includes(v);
