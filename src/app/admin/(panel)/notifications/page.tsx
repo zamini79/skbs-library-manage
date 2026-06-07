@@ -79,9 +79,9 @@ export default async function NotificationsPage() {
   await requireAny();
   const supabase = createAdminClient();
 
-  // 최근 14일치 조회 (충분히 넉넉히)
-  const dates14 = lastNKstDates(14);
-  const earliest = dates14[dates14.length - 1];
+  // 최근 7일치 조회
+  const dates7 = lastNKstDates(7);
+  const earliest = dates7[dates7.length - 1];
 
   const { data, error } = await supabase
     .from("rental_notifications")
@@ -113,12 +113,12 @@ export default async function NotificationsPage() {
     if (last7.has(r.sent_for_date)) weekCount++;
   }
 
-  // 일별 표 (14일 × 4 타입)
+  // 일별 표 (7일 × 4 타입)
   const daily: Record<
     string,
     Record<NotificationType, number> & { total: number }
   > = {};
-  for (const d of dates14)
+  for (const d of dates7)
     daily[d] = { due_2: 0, due_1: 0, due_0: 0, overdue: 0, total: 0 };
   for (const r of rows) {
     const bucket = daily[r.sent_for_date];
@@ -127,7 +127,8 @@ export default async function NotificationsPage() {
     bucket.total++;
   }
 
-  const recent = rows.slice(0, 100);
+  // 최근 7일 내 발송 건 전체 — 화면에는 10건 높이만 보이고 나머지는 스크롤
+  const recent = rows;
 
   return (
     <div className="space-y-6">
@@ -157,7 +158,7 @@ export default async function NotificationsPage() {
           </div>
 
           <section className="space-y-2">
-            <h2 className="text-sm font-semibold text-foreground">일별 (최근 14일)</h2>
+            <h2 className="text-sm font-semibold text-foreground">일별 (최근 7일)</h2>
             <div className="bg-card border rounded-md overflow-hidden">
               <table className="w-full text-sm">
                 <thead className="bg-muted/50 text-xs text-muted-foreground">
@@ -171,7 +172,7 @@ export default async function NotificationsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {dates14.map((d) => {
+                  {dates7.map((d) => {
                     const b = daily[d];
                     const isToday = d === today;
                     return (
@@ -209,11 +210,12 @@ export default async function NotificationsPage() {
 
           <section className="space-y-2">
             <h2 className="text-sm font-semibold text-foreground">
-              최근 발송 상세 (최신 {recent.length}건)
+              최근 발송 상세 (최근 7일 · {recent.length}건)
             </h2>
-            <div className="bg-card border rounded-md overflow-hidden">
+            {/* 10건 높이까지만 표시, 초과분은 세로 스크롤 */}
+            <div className="bg-card border rounded-md overflow-hidden max-h-[570px] overflow-y-auto">
               <table className="w-full text-sm">
-                <thead className="bg-muted/50 text-xs text-muted-foreground">
+                <thead className="bg-muted text-xs text-muted-foreground sticky top-0 z-10">
                   <tr>
                     <th className="text-left px-4 py-2 w-44">발송 시각 (KST)</th>
                     <th className="text-left px-4 py-2 w-20">타입</th>
