@@ -14,10 +14,12 @@ export function TopBarChart({
   title,
   data,
   unit = "회",
+  tooltipLabel = "대출",
 }: {
   title: string;
   data: Array<{ label: string; count: number }>;
   unit?: string;
+  tooltipLabel?: string;
 }) {
   return (
     <div className="bg-card border rounded-md p-5 space-y-3">
@@ -49,7 +51,7 @@ export function TopBarChart({
               tickLine={false}
             />
             <Tooltip
-              formatter={(value) => [`${value}${unit}`, "대출"]}
+              formatter={(value) => [`${value}${unit}`, tooltipLabel]}
               contentStyle={{
                 background: "hsl(var(--card))",
                 border: "1px solid hsl(var(--border))",

@@ -28,6 +28,7 @@ export default async function AdminDashboardPage() {
     overdueListRes,
     pendingRequestsRes,
     returnPendingRes,
+    topMileageRes,
   ] = await Promise.all([
     supabase
       .from("books")
@@ -76,6 +77,12 @@ export default async function AdminDashboardPage() {
       .select("id", { count: "exact", head: true })
       .in("status", ["active", "overdue"])
       .not("return_requested_at", "is", null),
+    supabase
+      .from("users")
+      .select("name, mileage")
+      .gt("mileage", 0)
+      .order("mileage", { ascending: false })
+      .limit(10),
   ]);
 
   const pendingCount = pendingRequestsRes.count ?? 0;
@@ -103,6 +110,12 @@ export default async function AdminDashboardPage() {
   const topBooks = Array.from(bookCounts.values())
     .sort((a, b) => b.count - a.count)
     .slice(0, 10);
+  // 개인별 마일리지 TOP10 (이미 mileage 내림차순 정렬 + 양수만)
+  const topMileage = (
+    (topMileageRes.data ?? []) as Array<{ name: string | null; mileage: number }>
+  )
+    .filter((u) => u.name)
+    .map((u) => ({ label: u.name as string, count: u.mileage }));
 
   return (
     <div className="space-y-6">
@@ -179,6 +192,15 @@ export default async function AdminDashboardPage() {
       <section className="grid lg:grid-cols-2 gap-4">
         <TopBarChart title="개인별 대출 TOP 10" data={topUsers} />
         <TopBarChart title="도서별 대출 TOP 10" data={topBooks} />
+      </section>
+
+      <section className="grid lg:grid-cols-2 gap-4">
+        <TopBarChart
+          title="개인별 마일리지 TOP 10"
+          data={topMileage}
+          unit="점"
+          tooltipLabel="마일리지"
+        />
       </section>
 
       <section className="grid lg:grid-cols-2 gap-4">
