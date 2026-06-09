@@ -189,12 +189,9 @@ export default async function AdminDashboardPage() {
         />
       </section>
 
-      <section className="grid lg:grid-cols-2 gap-4">
+      <section className="grid gap-4 lg:grid-cols-3">
         <TopBarChart title="개인별 대출 TOP 10" data={topUsers} />
         <TopBarChart title="도서별 대출 TOP 10" data={topBooks} />
-      </section>
-
-      <section className="grid lg:grid-cols-2 gap-4">
         <TopBarChart
           title="개인별 마일리지 TOP 10"
           data={topMileage}
