@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { requireMaster } from "@/lib/auth/admin-auth";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import {
   BOOK_CATEGORIES,
   type BookCategory,
@@ -65,6 +66,24 @@ export default async function AdminBooksPage({
 
   const totalPages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE));
 
+  // 현재 페이지 도서들의 활성/연체 대출자 이름 조회 (다른 사용자 대출은 RLS로 막히므로 service-role 사용)
+  const borrowers: Record<string, string[]> = {};
+  const bookIds = (books ?? []).map((b) => b.id);
+  if (bookIds.length > 0) {
+    const admin = createAdminClient();
+    const { data: activeRentals } = await admin
+      .from("rentals")
+      .select("book_id, user:users!user_id (name)")
+      .in("book_id", bookIds)
+      .in("status", ["active", "overdue"]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    for (const r of (activeRentals ?? []) as any[]) {
+      const name = Array.isArray(r.user) ? r.user[0]?.name : r.user?.name;
+      if (!name) continue;
+      (borrowers[r.book_id] ??= []).push(name);
+    }
+  }
+
   function pageUrl(p: number): string {
     const params = new URLSearchParams();
     if (q) params.set("q", q);
@@ -102,7 +121,7 @@ export default async function AdminBooksPage({
           조회 오류: {error.message}
         </div>
       ) : (
-        <BooksTable books={books ?? []} />
+        <BooksTable books={books ?? []} borrowers={borrowers} />
       )}
 
       {totalPages > 1 && (

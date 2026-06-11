@@ -58,7 +58,13 @@ function statusBadge(book: Pick<Book, "status" | "available_quantity">) {
   return <span className="badge-active">대출 중</span>;
 }
 
-export function BooksTable({ books }: { books: Book[] }) {
+export function BooksTable({
+  books,
+  borrowers = {},
+}: {
+  books: Book[];
+  borrowers?: Record<string, string[]>;
+}) {
   const router = useRouter();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -343,7 +349,14 @@ export function BooksTable({ books }: { books: Book[] }) {
                     <TableCell className="text-right font-mono tabular">
                       {book.available_quantity}
                     </TableCell>
-                    <TableCell className="whitespace-nowrap">{statusBadge(book)}</TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      {statusBadge(book)}
+                      {(borrowers[book.id]?.length ?? 0) > 0 && (
+                        <div className="text-[11px] text-muted-foreground mt-0.5 whitespace-normal leading-tight">
+                          대출자: {borrowers[book.id].join(", ")}
+                        </div>
+                      )}
+                    </TableCell>
                     <TableCell className="text-right font-mono tabular">
                       {book.price.toLocaleString()}
                     </TableCell>
