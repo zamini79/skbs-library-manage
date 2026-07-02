@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { Eye, EyeOff } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { findGuessablePasswordIssue } from "@/lib/password-policy";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -68,6 +69,16 @@ export function SignupCompleteForm({
     const parsed = ProfileSchema.safeParse(form);
     if (!parsed.success) {
       setError(parsed.error.issues[0].message);
+      setLoading(false);
+      return;
+    }
+
+    const guessableIssue = findGuessablePasswordIssue(parsed.data.password, {
+      email,
+      employeeNo: parsed.data.employee_no,
+    });
+    if (guessableIssue) {
+      setError(guessableIssue);
       setLoading(false);
       return;
     }

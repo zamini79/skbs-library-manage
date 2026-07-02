@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/client";
+import { findGuessablePasswordIssue } from "@/lib/password-policy";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -54,6 +55,11 @@ export default function ResetPasswordUpdatePage() {
     const parsed = PasswordSchema.safeParse(password);
     if (!parsed.success) {
       setError(parsed.error.issues[0].message);
+      return;
+    }
+    const guessableIssue = findGuessablePasswordIssue(parsed.data, { email });
+    if (guessableIssue) {
+      setError(guessableIssue);
       return;
     }
 
