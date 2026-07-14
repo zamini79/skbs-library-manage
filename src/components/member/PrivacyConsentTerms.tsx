@@ -3,7 +3,7 @@ export function PrivacyConsentTerms() {
   return (
     <div className="border border-line rounded-md bg-paper-warm max-h-56 overflow-y-auto p-4 text-xs leading-relaxed text-ink space-y-3">
       <p className="text-ink-soft">
-        SK바이오사이언스 사내 도서관(이하 &quot;도서관&quot;)은 회원 가입 및
+        SK Bioscience ECO Bio 도서관(이하 &quot;도서관&quot;)은 회원 가입 및
         서비스 제공을 위하여 아래와 같이 개인정보를 수집·이용합니다. 내용을
         확인하신 후 동의 여부를 선택하여 주시기 바랍니다.
       </p>
@@ -62,7 +62,7 @@ export function PrivacyConsentTerms() {
         <div className="font-semibold text-ink">개인정보 처리자</div>
         <ul className="text-ink-soft list-disc pl-4 space-y-0.5">
           <li>기관명: SK바이오사이언스 주식회사</li>
-          <li>서비스명: SK바이오사이언스 사내 도서관</li>
+          <li>서비스명: SK Bioscience ECO Bio 도서관</li>
           <li>문의처: 사내 도서관 담당 부서</li>
         </ul>
       </div>

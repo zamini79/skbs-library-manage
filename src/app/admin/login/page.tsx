@@ -112,7 +112,7 @@ export default function AdminLoginPage() {
       <div className="w-full max-w-sm bg-card rounded-lg shadow-xl p-8 space-y-6">
         <div className="space-y-1 text-center">
           <h1 className="text-2xl font-bold tracking-tight">
-            SK Bioscience 사내 도서관
+            SK Bioscience ECO Bio 도서관
           </h1>
           <p className="text-xs font-mono tracking-widest text-muted-foreground uppercase">
             Admin Console

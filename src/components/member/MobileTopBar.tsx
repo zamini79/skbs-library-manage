@@ -21,7 +21,7 @@ export function MobileTopBar({
           href="/"
           className="font-serif text-[16px] font-bold tracking-tight text-ink truncate min-w-0"
         >
-          SK Bioscience 사내 도서관
+          SK Bioscience ECO Bio 도서관
         </Link>
         <nav className="flex items-center gap-[14px] text-ink-soft">
           {loggedIn && name ? (

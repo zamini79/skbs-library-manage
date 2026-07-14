@@ -25,7 +25,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SK Bioscience 사내 도서관",
+  title: "SK Bioscience ECO Bio 도서관",
   description: "구성원 도서 대출 시스템",
 };
 

@@ -34,7 +34,7 @@ export function MemberHeader({ name }: { name: string | null }) {
           href="/"
           className="font-serif text-base font-bold tracking-tight text-ink hover:text-library-accent transition-colors"
         >
-          SK Bioscience 사내 도서관
+          SK Bioscience ECO Bio 도서관
         </Link>
         {name ? (
           <UserMenu name={name} />

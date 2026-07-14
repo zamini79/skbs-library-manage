@@ -67,7 +67,7 @@ export function Sidebar({
     >
       <div className="px-6 py-6 border-b border-sidebar-border relative">
         <div className="text-sm font-bold tracking-tight text-white">
-          SK Bioscience 사내 도서관
+          SK Bioscience ECO Bio 도서관
         </div>
         <div className="font-mono text-[9px] tracking-widest text-sidebar-section mt-1">
           ADMIN CONSOLE
