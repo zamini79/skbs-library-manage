@@ -141,6 +141,9 @@ export default function SignupVerifyPage() {
         <p className="text-sm text-ink-soft">
           입력하신 이메일로 발송된 인증 코드를 입력해주세요.
         </p>
+        <p className="text-xs text-busy">
+          인증 메일이 정크메일함(스팸함)으로 갈 수 있으니 확인해 주세요!
+        </p>
       </header>
 
       <div className="bg-paper border border-line rounded-md p-6 space-y-4">
