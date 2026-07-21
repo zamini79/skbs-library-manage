@@ -106,14 +106,6 @@ export default async function MemberLayout({
       )}
       {daysLeft !== null && <ConsentExpiryBanner daysLeft={daysLeft} />}
 
-      {/* [임시] 인앱 브라우저 진단 링크 — 신호 확인 후 제거 예정 */}
-      <a
-        href="/whoami"
-        className="block bg-yellow-300 text-black text-center text-sm font-semibold py-2 underline"
-      >
-        [임시] 접속 환경 진단 열기
-      </a>
-
       <main className="flex-1 mx-auto w-full max-w-[1720px] px-4 md:px-8 pt-6 pb-8 md:pt-2 md:pb-6">
         {children}
       </main>
