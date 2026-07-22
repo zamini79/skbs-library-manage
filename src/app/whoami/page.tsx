@@ -3,6 +3,7 @@
 // User-Agent / 헤더를 비교하면 "앱에만 있는 고유 신호"를 찾을 수 있다.
 // 신호 확인이 끝나면 이 파일(src/app/whoami)은 삭제할 것.
 import { headers } from "next/headers";
+import { classifyClient } from "@/lib/inapp";
 
 // 절대 캐시되지 않도록 매 요청 동적 렌더링
 export const dynamic = "force-dynamic";
@@ -10,6 +11,13 @@ export const dynamic = "force-dynamic";
 export default function WhoAmIPage() {
   const h = headers();
   const userAgent = h.get("user-agent") ?? "(없음)";
+
+  // 캡처 불가 환경(Android 앱 등)을 위해, 판정 결과를 큰 글씨로 표시.
+  const klass = classifyClient(userAgent);
+  const hasWv = /\bwv\b/.test(userAgent);
+  const isWebview = klass === "ios-webview" || klass === "android-webview";
+  const verdictColor = isWebview ? "#2a8a4a" : "#EA002C";
+  const verdictText = isWebview ? "인앱 브라우저 ✅" : "일반 브라우저 ❌";
 
   // 앱이 실어보낼 만한 커스텀 헤더 후보들
   const interesting = [
@@ -43,8 +51,30 @@ export default function WhoAmIPage() {
     >
       <h1 style={{ fontSize: 20, marginBottom: 4 }}>접속 환경 진단</h1>
       <p style={{ color: "#666", fontSize: 13, marginTop: 0 }}>
-        이 화면을 앱 인앱 브라우저와 일반 브라우저에서 각각 캡처해 비교하세요.
+        캡처가 안 되면 아래 큰 글씨 결과를 그대로 읽어서 알려주세요.
       </p>
+
+      {/* 캡처 불가 환경용 판정 요약 (크게) */}
+      <div
+        style={{
+          marginTop: 16,
+          padding: 16,
+          borderRadius: 12,
+          border: `2px solid ${verdictColor}`,
+          background: `${verdictColor}0d`,
+          textAlign: "center",
+        }}
+      >
+        <div style={{ fontSize: 26, fontWeight: 800, color: verdictColor }}>
+          {verdictText}
+        </div>
+        <div style={{ marginTop: 8, fontSize: 15, color: "#333" }}>
+          판정 코드: <b>{klass}</b>
+        </div>
+        <div style={{ marginTop: 4, fontSize: 15, color: "#333" }}>
+          Android <code>wv</code> 토큰: <b>{hasWv ? "있음 ✅" : "없음 ❌"}</b>
+        </div>
+      </div>
 
       <section style={{ marginTop: 20 }}>
         <h2 style={{ fontSize: 15, color: "#EA002C" }}>User-Agent</h2>
