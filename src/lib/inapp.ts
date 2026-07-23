@@ -56,7 +56,7 @@ export function isBlocked(klass: ClientClass, mode: GateMode): boolean {
 
 // 게이트를 적용할 구성원 콘텐츠 경로.
 // 계정 흐름(/login, /signup, /reset-password, /auth, /consent, /change-password),
-// 관리자(/admin), 진단(/whoami), 안내(/app-required), API/정적파일은 대상이 아니다.
+// 관리자(/admin), 안내(/app-required), API/정적파일은 대상이 아니다.
 const GATED_PREFIXES = ["/books", "/ranking", "/my"];
 
 export function isGatedPath(pathname: string): boolean {
