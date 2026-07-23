@@ -65,3 +65,42 @@ export function isGatedPath(pathname: string): boolean {
     (p) => pathname === p || pathname.startsWith(p + "/"),
   );
 }
+
+// 회사 공인 IP 대역 (사내망/회사 Zscaler 게이트웨이).
+// 이 대역에서 온 접속은 인앱이 아니어도 허용한다.
+const COMPANY_CIDRS = [
+  "165.225.228.0/23",
+  "147.161.192.0/23",
+  "165.225.102.0/24",
+];
+
+function ipv4ToInt(ip: string): number | null {
+  const parts = ip.split(".");
+  if (parts.length !== 4) return null;
+  let n = 0;
+  for (const part of parts) {
+    const octet = Number(part);
+    if (!Number.isInteger(octet) || octet < 0 || octet > 255) return null;
+    n = n * 256 + octet;
+  }
+  return n >>> 0;
+}
+
+function ipv4InCidr(ip: string, cidr: string): boolean {
+  const [range, bitsStr] = cidr.split("/");
+  const bits = Number(bitsStr);
+  const ipInt = ipv4ToInt(ip);
+  const rangeInt = ipv4ToInt(range);
+  if (ipInt === null || rangeInt === null || !Number.isInteger(bits)) {
+    return false;
+  }
+  const mask = bits === 0 ? 0 : (~0 << (32 - bits)) >>> 0;
+  return (ipInt & mask) === (rangeInt & mask);
+}
+
+export function isCompanyIp(ip: string | null | undefined): boolean {
+  if (!ip) return false;
+  // IPv6-mapped IPv4 (::ffff:1.2.3.4) 형태 정규화
+  const v4 = ip.startsWith("::ffff:") ? ip.slice(7) : ip;
+  return COMPANY_CIDRS.some((cidr) => ipv4InCidr(v4, cidr));
+}
