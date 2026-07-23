@@ -26,11 +26,11 @@ export default function AppRequiredPage() {
         </div>
 
         <h1 className="text-xl font-bold text-[#1a1a1a]">
-          회사 앱에서 열어주세요
+          스콘에서 접속해주세요
         </h1>
 
         <p className="mt-3 text-sm leading-6 text-[#555]">
-          SK Bioscience ECO Bio 도서관은 <b>회사 모바일앱</b>을 통해서만
+          SK Bioscience ECO Bio 도서관은 <b>스콘</b>을 통해서만
           이용할 수 있습니다.
           <br />
           일반 웹브라우저에서는 도서 조회·대여현황을 볼 수 없어요.
@@ -39,8 +39,8 @@ export default function AppRequiredPage() {
         <div className="mt-6 rounded-xl border border-[#e5e5e0] bg-white p-4 text-left text-sm text-[#444]">
           <p className="font-semibold text-[#1a1a1a]">이용 방법</p>
           <ol className="mt-2 list-decimal space-y-1 pl-5">
-            <li>회사 모바일앱을 실행합니다.</li>
-            <li>앱 안에서 도서관 메뉴로 접속합니다.</li>
+            <li>스콘을 실행한다.</li>
+            <li>업무 - 송도 도서관 으로 접속한다.</li>
           </ol>
         </div>
 
