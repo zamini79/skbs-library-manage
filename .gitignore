@@ -49,3 +49,7 @@ supabase/.temp
 doc/*.xlsx
 doc/*.xlsm
 doc/~$*
+
+# 루트 작업용 문서(엑셀/zip) — 저장소 추적 제외
+/*.xlsx
+/*.zip
