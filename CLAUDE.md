@@ -24,8 +24,8 @@ SK 사내 1층에 비치된 도서(약 701권)를 구성원에게 대여하는 �
 
 ### 대여 정책
 - 기본 대여 기간: **14일**
-- 1인당 월 대여 횟수: **최대 2회** (매월 1일~말일 기준 리셋)
-- 1인당 동시 보유 권수: **최대 2권**
+- 1인당 월 대여 횟수: **최대 3회** (매월 1일~말일 기준 리셋)
+- 1인당 동시 보유 권수: **최대 3권**
 - 연장: **불가**
 - 연체 중 신규 대여: **불가**
 - 동일 도서 재대여: **가능** (다른 제약 통과 시)
@@ -136,7 +136,7 @@ library/
 │   │   ├── auth/
 │   │   │   ├── admin-auth.ts   # 관리자 인증 (bcrypt, JWT)
 │   │   │   └── member-auth.ts  # Supabase Auth wrapper
-│   │   ├── policies.ts         # 대여 정책 상수 (14일, 2회, 2권 등)
+│   │   ├── policies.ts         # 대여 정책 상수 (14일, 3회, 3권 등)
 │   │   └── utils.ts
 │   │
 │   ├── types/
@@ -303,8 +303,8 @@ npx vercel --prod
 ```typescript
 export const RENTAL_POLICY = {
   RENTAL_PERIOD_DAYS: 14,
-  MAX_MONTHLY_RENTALS: 2,
-  MAX_CONCURRENT_HOLDINGS: 2,
+  MAX_MONTHLY_RENTALS: 3,
+  MAX_CONCURRENT_HOLDINGS: 3,
   ALLOW_EXTENSION: false,
   ALLOW_RENTAL_WHEN_OVERDUE: false,
   EMAIL_DOMAIN: '@sk.com',
@@ -403,7 +403,7 @@ export const BOOK_CATEGORIES = [
 - 관리자 권한 API: `import { createAdminClient } from '@/lib/supabase/admin'` (service_role)
 
 ### Q. 대여 가능 여부를 어떻게 검증하나?
-DB의 `check_rental_eligibility(user_id, book_id)` RPC 호출. 이 함수가 모든 정책(월 2회, 동시 2권, 연체 여부, 도서 가용 여부)을 한 번에 검증한다.
+DB의 `check_rental_eligibility(user_id, book_id)` RPC 호출. 이 함수가 모든 정책(월 3회, 동시 3권, 연체 여부, 도서 가용 여부)을 한 번에 검증한다.
 
 ### Q. 반납 처리 시 마일리지 적립을 코드에서 직접 하나?
 **아니오.** DB 트리거가 자동 처리한다. 코드에서는 단순히 `rentals.status = 'returned'`, `returned_at = NOW()`, `return_admin_id = ...`만 UPDATE.

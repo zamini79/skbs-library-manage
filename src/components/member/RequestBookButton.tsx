@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { RENTAL_POLICY } from "@/lib/policies";
 
 type Eligibility = {
   eligible?: boolean;
@@ -33,11 +34,11 @@ function eligibilityReasons(e: Eligibility | null | undefined): string[] {
     out.push("이 도서는 현재 대출 중이거나 가용 수량이 없습니다.");
   if (typeof e.monthly_remaining === "number" && e.monthly_remaining <= 0)
     out.push(
-      `이번 달 대출 한도(2회)를 모두 사용했습니다 (현재 ${e.monthly_count ?? 0}/2회). 다음 달 1일에 초기화됩니다.`,
+      `이번 달 대출 한도(${RENTAL_POLICY.MAX_MONTHLY_RENTALS}회)를 모두 사용했습니다 (현재 ${e.monthly_count ?? 0}/${RENTAL_POLICY.MAX_MONTHLY_RENTALS}회). 다음 달 1일에 초기화됩니다.`,
     );
   if (typeof e.holding_remaining === "number" && e.holding_remaining <= 0)
     out.push(
-      `동시에 보유할 수 있는 도서(2권)를 모두 대출 중입니다 (현재 ${e.current_holding ?? 0}/2권). 먼저 반납해주세요.`,
+      `동시에 보유할 수 있는 도서(${RENTAL_POLICY.MAX_CONCURRENT_HOLDINGS}권)를 모두 대출 중입니다 (현재 ${e.current_holding ?? 0}/${RENTAL_POLICY.MAX_CONCURRENT_HOLDINGS}권). 먼저 반납해주세요.`,
     );
   if (e.has_overdue)
     out.push(

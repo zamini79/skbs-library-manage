@@ -476,14 +476,14 @@ BEGIN
 
   v_result := json_build_object(
     'eligible',                (v_book_available > 0 AND v_book_status = 'active' AND
-                                v_monthly_count < 2 AND v_current_holding < 2 AND
+                                v_monthly_count < 3 AND v_current_holding < 3 AND
                                 v_overdue_count = 0 AND NOT v_in_cooldown),
     'book_available',          v_book_available > 0,
     'book_active',             v_book_status = 'active',
     'monthly_count',           v_monthly_count,
-    'monthly_remaining',       GREATEST(0, 2 - v_monthly_count),
+    'monthly_remaining',       GREATEST(0, 3 - v_monthly_count),
     'current_holding',         v_current_holding,
-    'holding_remaining',       GREATEST(0, 2 - v_current_holding),
+    'holding_remaining',       GREATEST(0, 3 - v_current_holding),
     'overdue_count',           v_overdue_count,
     'has_overdue',             v_overdue_count > 0,
     'cooldown_until',          v_cooldown_until,
@@ -496,7 +496,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 COMMENT ON FUNCTION public.check_rental_eligibility IS
-  '대여 가능 여부 자동 검증 (월 2회, 동시 2권, 연체 보유, 연체 쿨다운 확인)';
+  '대여 가능 여부 자동 검증 (월 3회, 동시 3권, 연체 보유, 연체 쿨다운 확인)';
 
 
 -- ----------------------------------------------------------------------------
