@@ -48,6 +48,52 @@ function fromBook(book: Book): FormState {
   };
 }
 
+/**
+ * 표지 미리보기 — 입력한 URL(수동) 우선, 없으면 자동 조회된 표지를 보여준다.
+ * 로드 실패(잘못된 URL·삭제된 이미지)는 안내 문구로 대체해 깨진 이미지가 남지 않게 한다.
+ */
+function CoverPreview({ url, auto }: { url: string | null; auto: boolean }) {
+  const [failed, setFailed] = useState(false);
+  const box =
+    "w-[76px] shrink-0 rounded border border-line bg-bg flex items-center justify-center text-center text-[10px] leading-tight text-ink-muted overflow-hidden";
+  const ratio = { aspectRatio: "1 / 1.45" };
+
+  if (!url) {
+    return (
+      <div className={box} style={ratio}>
+        표지
+        <br />
+        없음
+      </div>
+    );
+  }
+  if (failed) {
+    return (
+      <div className={box} style={ratio}>
+        불러오기
+        <br />
+        실패
+      </div>
+    );
+  }
+  return (
+    <div className="shrink-0">
+      <div className={box} style={ratio}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={url}
+          alt="표지 미리보기"
+          className="w-full h-full object-cover"
+          onError={() => setFailed(true)}
+        />
+      </div>
+      <div className="mt-1 text-center text-[10px] text-ink-muted">
+        {auto ? "자동 조회" : "직접 지정"}
+      </div>
+    </div>
+  );
+}
+
 export function BookEditDialog({ book }: { book: Book }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -207,14 +253,37 @@ export function BookEditDialog({ book }: { book: Book }) {
               </div>
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="edit-cover">표지 이미지 URL</Label>
-                <Input
-                  id="edit-cover"
-                  type="url"
-                  value={form.cover_url}
-                  onChange={(e) => update("cover_url", e.target.value)}
-                  disabled={submitting}
-                  placeholder="https://... (선택, 외부 URL)"
-                />
+                <div className="flex gap-3">
+                  <div className="flex-1 space-y-2">
+                    <Input
+                      id="edit-cover"
+                      type="url"
+                      value={form.cover_url}
+                      onChange={(e) => update("cover_url", e.target.value)}
+                      disabled={submitting}
+                      placeholder="https://... (선택, 외부 URL)"
+                    />
+                    {/* 자동 조회된 표지(cover_url_external)는 별도 컬럼이라 위 입력칸에 뜨지 않는다.
+                        비워두면 이 자동 표지가 구성원 화면에 노출되므로 현재 상태를 안내한다. */}
+                    <p className="text-xs text-ink-muted">
+                      {form.cover_url.trim() ? (
+                        <>
+                          직접 입력한 표지가 우선 표시됩니다.
+                          {book.cover_url_external && " (자동 조회 표지는 미사용)"}
+                        </>
+                      ) : book.cover_url_external ? (
+                        "자동 조회된 표지가 사용 중입니다. 직접 지정하려면 URL을 입력하세요."
+                      ) : (
+                        "표지가 없습니다. 자동 조회에 실패했으므로 URL을 직접 입력해 주세요."
+                      )}
+                    </p>
+                  </div>
+                  {/* 미리보기 — 직접 입력값 우선, 없으면 자동 조회 표지 (구성원 화면과 동일 우선순위) */}
+                  <CoverPreview
+                    url={form.cover_url.trim() || book.cover_url_external}
+                    auto={!form.cover_url.trim() && !!book.cover_url_external}
+                  />
+                </div>
               </div>
             </div>
 
