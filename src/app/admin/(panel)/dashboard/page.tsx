@@ -6,10 +6,20 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { KpiCard } from "@/components/admin/dashboard/KpiCard";
 import { TopBarChart } from "@/components/admin/dashboard/TopBarChart";
 import { RentalListPanel } from "@/components/admin/dashboard/RentalListPanel";
+import { MonthlyRentalChart } from "@/components/admin/dashboard/MonthlyRentalChart";
+import { DailyRentalCard } from "@/components/admin/dashboard/DailyRentalCard";
+import { kstDayRange, kstRecentMonths, kstToday } from "@/lib/kst";
+
+const MONTHS_ON_CHART = 6;
 
 export default async function AdminDashboardPage() {
   const admin = await requireAny();
   const supabase = createAdminClient();
+
+  // 최근 6개월 구간(KST) — 월 경계마다 count 조회. head:true 라 행은 전송되지 않는다.
+  const monthBuckets = kstRecentMonths(MONTHS_ON_CHART);
+  const today = kstToday();
+  const todayRange = kstDayRange(today);
 
   const startOfMonth = (() => {
     const d = new Date();
@@ -29,6 +39,8 @@ export default async function AdminDashboardPage() {
     pendingRequestsRes,
     returnPendingRes,
     topMileageRes,
+    monthlyCountsRes,
+    todayCountRes,
   ] = await Promise.all([
     supabase
       .from("books")
@@ -83,7 +95,26 @@ export default async function AdminDashboardPage() {
       .gt("mileage", 0)
       .order("mileage", { ascending: false })
       .limit(10),
+    Promise.all(
+      monthBuckets.map((b) =>
+        supabase
+          .from("rentals")
+          .select("id", { count: "exact", head: true })
+          .gte("rented_at", b.start)
+          .lt("rented_at", b.end),
+      ),
+    ),
+    supabase
+      .from("rentals")
+      .select("id", { count: "exact", head: true })
+      .gte("rented_at", todayRange.start)
+      .lt("rented_at", todayRange.end),
   ]);
+
+  const monthlyData = monthBuckets.map((b, i) => ({
+    label: b.label,
+    count: monthlyCountsRes[i]?.count ?? 0,
+  }));
 
   const pendingCount = pendingRequestsRes.count ?? 0;
   const returnPendingCount = returnPendingRes.count ?? 0;
@@ -186,6 +217,19 @@ export default async function AdminDashboardPage() {
           label="이번 달 신규 대출"
           value={monthlyRes.count ?? 0}
           delta="매월 1일 리셋"
+        />
+      </section>
+
+      <section className="grid gap-4 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <MonthlyRentalChart
+            title={`월별 대출 추이 (최근 ${MONTHS_ON_CHART}개월)`}
+            data={monthlyData}
+          />
+        </div>
+        <DailyRentalCard
+          initialDate={today}
+          initialCount={todayCountRes.count ?? 0}
         />
       </section>
 
