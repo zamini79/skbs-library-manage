@@ -1,24 +1,49 @@
 "use client";
 
-// 지정한 날짜의 대출 건수 — 값이 하나뿐인 지표라 차트 대신 수치 타일로 표시한다.
-// 날짜를 바꾸면 대시보드 전체를 다시 그리지 않고 통계 API 만 재조회한다.
+// 기간별 대출 건수 — 값이 하나뿐인 지표라 차트 대신 수치 타일로 표시한다.
+// 기간을 바꾸면 대시보드 전체를 다시 그리지 않고 통계 API 만 재조회한다.
 import { useEffect, useState } from "react";
 
-export function DailyRentalCard({
-  initialDate,
-  initialCount,
-}: {
-  initialDate: string;
+type Props = {
+  /** 서버에서 계산해 내려준 초기 기간(양끝 포함)과 그 건수 */
+  initialFrom: string;
+  initialTo: string;
   initialCount: number;
-}) {
-  const [date, setDate] = useState(initialDate);
+  /** 선택 가능한 마지막 날짜(오늘, KST) */
+  maxDate: string;
+};
+
+/** 양끝 포함 일수 (from > to 면 0) */
+function dayCount(from: string, to: string): number {
+  const a = new Date(`${from}T00:00:00Z`).getTime();
+  const b = new Date(`${to}T00:00:00Z`).getTime();
+  if (Number.isNaN(a) || Number.isNaN(b) || b < a) return 0;
+  return Math.round((b - a) / 86_400_000) + 1;
+}
+
+export function DailyRentalCard({
+  initialFrom,
+  initialTo,
+  initialCount,
+  maxDate,
+}: Props) {
+  const [from, setFrom] = useState(initialFrom);
+  const [to, setTo] = useState(initialTo);
   const [count, setCount] = useState<number | null>(initialCount);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const invalidRange = from > to;
+
   useEffect(() => {
+    // 시작일이 종료일보다 늦으면 조회하지 않고 안내만 한다.
+    if (invalidRange) {
+      setError("시작일이 종료일보다 늦습니다.");
+      setCount(null);
+      return;
+    }
     // 초기값은 서버에서 이미 계산해 내려주므로 재조회하지 않는다.
-    if (date === initialDate) {
+    if (from === initialFrom && to === initialTo) {
       setCount(initialCount);
       setError(null);
       return;
@@ -28,7 +53,7 @@ export function DailyRentalCard({
     setLoading(true);
     setError(null);
 
-    fetch(`/api/admin/stats/daily-rentals?date=${date}`)
+    fetch(`/api/admin/stats/daily-rentals?from=${from}&to=${to}`)
       .then(async (res) => {
         const json = await res.json().catch(() => null);
         if (cancelled) return;
@@ -52,19 +77,36 @@ export function DailyRentalCard({
     return () => {
       cancelled = true;
     };
-  }, [date, initialDate, initialCount]);
+  }, [from, to, invalidRange, initialFrom, initialTo, initialCount]);
+
+  const days = dayCount(from, to);
+  const perDay =
+    count !== null && days > 0 ? (count / days).toFixed(1) : null;
+
+  const inputClass =
+    "border rounded px-2 py-1 text-xs bg-background w-full min-w-0";
 
   return (
     <div className="bg-card border rounded-md p-5 flex flex-col">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold">일자별 대출</h2>
+      <h2 className="text-lg font-semibold">기간별 대출</h2>
+
+      <div className="mt-3 flex items-center gap-1.5">
         <input
           type="date"
-          value={date}
-          max={initialDate}
-          onChange={(e) => e.target.value && setDate(e.target.value)}
-          aria-label="조회할 날짜"
-          className="border rounded px-2 py-1 text-sm bg-background"
+          value={from}
+          max={maxDate}
+          onChange={(e) => e.target.value && setFrom(e.target.value)}
+          aria-label="조회 시작일"
+          className={inputClass}
+        />
+        <span className="text-xs text-muted-foreground shrink-0">~</span>
+        <input
+          type="date"
+          value={to}
+          max={maxDate}
+          onChange={(e) => e.target.value && setTo(e.target.value)}
+          aria-label="조회 종료일"
+          className={inputClass}
         />
       </div>
 
@@ -84,7 +126,8 @@ export function DailyRentalCard({
               </span>
             </div>
             <div className="text-xs text-muted-foreground mt-1.5">
-              {date === initialDate ? "오늘" : date} 대출 건수
+              {days === 1 ? "1일간" : `${days}일간`}
+              {perDay !== null && days > 1 && ` · 일평균 ${perDay}회`}
             </div>
           </>
         )}

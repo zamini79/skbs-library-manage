@@ -8,9 +8,11 @@ import { TopBarChart } from "@/components/admin/dashboard/TopBarChart";
 import { RentalListPanel } from "@/components/admin/dashboard/RentalListPanel";
 import { MonthlyRentalChart } from "@/components/admin/dashboard/MonthlyRentalChart";
 import { DailyRentalCard } from "@/components/admin/dashboard/DailyRentalCard";
-import { kstDayRange, kstRecentMonths, kstToday } from "@/lib/kst";
+import { kstRange, kstRecentMonths, kstShiftDays, kstToday } from "@/lib/kst";
 
 const MONTHS_ON_CHART = 6;
+/** 기간별 대출 카드의 기본 조회 범위 (오늘 포함 최근 N일) */
+const DEFAULT_RANGE_DAYS = 7;
 
 export default async function AdminDashboardPage() {
   const admin = await requireAny();
@@ -19,7 +21,8 @@ export default async function AdminDashboardPage() {
   // 최근 6개월 구간(KST) — 월 경계마다 count 조회. head:true 라 행은 전송되지 않는다.
   const monthBuckets = kstRecentMonths(MONTHS_ON_CHART);
   const today = kstToday();
-  const todayRange = kstDayRange(today);
+  const rangeFrom = kstShiftDays(today, -(DEFAULT_RANGE_DAYS - 1));
+  const defaultRange = kstRange(rangeFrom, today);
 
   const startOfMonth = (() => {
     const d = new Date();
@@ -107,8 +110,8 @@ export default async function AdminDashboardPage() {
     supabase
       .from("rentals")
       .select("id", { count: "exact", head: true })
-      .gte("rented_at", todayRange.start)
-      .lt("rented_at", todayRange.end),
+      .gte("rented_at", defaultRange.start)
+      .lt("rented_at", defaultRange.end),
   ]);
 
   const monthlyData = monthBuckets.map((b, i) => ({
@@ -228,8 +231,10 @@ export default async function AdminDashboardPage() {
           />
         </div>
         <DailyRentalCard
-          initialDate={today}
+          initialFrom={rangeFrom}
+          initialTo={today}
           initialCount={todayCountRes.count ?? 0}
+          maxDate={today}
         />
       </section>
 

@@ -34,6 +34,26 @@ export function kstDayRange(date: string): { start: string; end: string } {
   return { start: start.toISOString(), end: end.toISOString() };
 }
 
+/** KST 캘린더 기준으로 date("YYYY-MM-DD")에서 delta일 이동한 날짜. */
+export function kstShiftDays(date: string, delta: number): string {
+  const d = new Date(`${date}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + delta);
+  return d.toISOString().slice(0, 10);
+}
+
+/** KST 기간 [from 00:00, to+1일 00:00) 의 시각 범위. from·to 는 양끝 포함. */
+export function kstRange(from: string, to: string): { start: string; end: string } {
+  return { start: kstDayRange(from).start, end: kstDayRange(to).end };
+}
+
+/** 양끝을 포함한 기간의 일수 (from > to 면 0). */
+export function kstDayCount(from: string, to: string): number {
+  const a = new Date(`${from}T00:00:00Z`).getTime();
+  const b = new Date(`${to}T00:00:00Z`).getTime();
+  if (b < a) return 0;
+  return Math.round((b - a) / 86_400_000) + 1;
+}
+
 export type MonthBucket = {
   /** "YYYY-MM" */
   key: string;
