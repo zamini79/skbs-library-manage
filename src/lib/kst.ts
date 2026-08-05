@@ -54,6 +54,34 @@ export function kstDayCount(from: string, to: string): number {
   return Math.round((b - a) / 86_400_000) + 1;
 }
 
+/** timestamptz 값이 속한 KST 캘린더 날짜 ("YYYY-MM-DD"). */
+export function kstDateOf(ts: string | Date): string {
+  return KST_DATE_FMT.format(typeof ts === "string" ? new Date(ts) : ts);
+}
+
+export type DayBucket = {
+  /** "YYYY-MM-DD" */
+  date: string;
+  /** 차트 X축 라벨 ("M/D") */
+  label: string;
+  count: number;
+};
+
+/** from~to(양끝 포함) 각 날짜를 count 0 으로 채운 버킷 목록. */
+export function kstEachDay(from: string, to: string): DayBucket[] {
+  const out: DayBucket[] = [];
+  const days = kstDayCount(from, to);
+  for (let i = 0; i < days; i++) {
+    const date = kstShiftDays(from, i);
+    out.push({
+      date,
+      label: `${Number(date.slice(5, 7))}/${Number(date.slice(8, 10))}`,
+      count: 0,
+    });
+  }
+  return out;
+}
+
 export type MonthBucket = {
   /** "YYYY-MM" */
   key: string;

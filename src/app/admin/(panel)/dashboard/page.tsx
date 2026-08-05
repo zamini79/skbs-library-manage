@@ -7,12 +7,13 @@ import { KpiCard } from "@/components/admin/dashboard/KpiCard";
 import { TopBarChart } from "@/components/admin/dashboard/TopBarChart";
 import { RentalListPanel } from "@/components/admin/dashboard/RentalListPanel";
 import { MonthlyRentalChart } from "@/components/admin/dashboard/MonthlyRentalChart";
-import { DailyRentalCard } from "@/components/admin/dashboard/DailyRentalCard";
-import { kstRange, kstRecentMonths, kstShiftDays, kstToday } from "@/lib/kst";
+import { RangeRentalChart } from "@/components/admin/dashboard/RangeRentalChart";
+import { kstRecentMonths, kstShiftDays, kstToday } from "@/lib/kst";
+import { fetchDailyRentalCounts, MAX_RANGE_DAYS } from "@/lib/rental-stats";
 
 const MONTHS_ON_CHART = 6;
-/** 기간별 대출 카드의 기본 조회 범위 (오늘 포함 최근 N일) */
-const DEFAULT_RANGE_DAYS = 7;
+/** 기간별 대출 차트의 기본 조회 범위 (오늘 포함 최근 N일) */
+const DEFAULT_RANGE_DAYS = 14;
 
 export default async function AdminDashboardPage() {
   const admin = await requireAny();
@@ -22,7 +23,6 @@ export default async function AdminDashboardPage() {
   const monthBuckets = kstRecentMonths(MONTHS_ON_CHART);
   const today = kstToday();
   const rangeFrom = kstShiftDays(today, -(DEFAULT_RANGE_DAYS - 1));
-  const defaultRange = kstRange(rangeFrom, today);
 
   const startOfMonth = (() => {
     const d = new Date();
@@ -43,7 +43,7 @@ export default async function AdminDashboardPage() {
     returnPendingRes,
     topMileageRes,
     monthlyCountsRes,
-    todayCountRes,
+    rangeStatsRes,
   ] = await Promise.all([
     supabase
       .from("books")
@@ -107,11 +107,7 @@ export default async function AdminDashboardPage() {
           .lt("rented_at", b.end),
       ),
     ),
-    supabase
-      .from("rentals")
-      .select("id", { count: "exact", head: true })
-      .gte("rented_at", defaultRange.start)
-      .lt("rented_at", defaultRange.end),
+    fetchDailyRentalCounts(supabase, rangeFrom, today),
   ]);
 
   const monthlyData = monthBuckets.map((b, i) => ({
@@ -223,18 +219,17 @@ export default async function AdminDashboardPage() {
         />
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <MonthlyRentalChart
-            title={`월별 대출 추이 (최근 ${MONTHS_ON_CHART}개월)`}
-            data={monthlyData}
-          />
-        </div>
-        <DailyRentalCard
+      <section className="grid gap-4 lg:grid-cols-2">
+        <MonthlyRentalChart
+          title={`월별 대출 추이 (최근 ${MONTHS_ON_CHART}개월)`}
+          data={monthlyData}
+        />
+        <RangeRentalChart
           initialFrom={rangeFrom}
           initialTo={today}
-          initialCount={todayCountRes.count ?? 0}
+          initialDaily={rangeStatsRes.daily}
           maxDate={today}
+          maxDays={MAX_RANGE_DAYS}
         />
       </section>
 

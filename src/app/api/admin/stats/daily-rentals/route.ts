@@ -1,17 +1,13 @@
 // GET /api/admin/stats/daily-rentals?from=YYYY-MM-DD&to=YYYY-MM-DD
-// 지정한 기간(KST 기준, 양끝 포함)에 발생한 대출 건수를 반환한다. 관리자(master/book) 공통 허용.
-//
-// rented_at 은 timestamptz 이므로 KST 경계 [from 00:00, to+1일 00:00) 로 환산해서 센다.
-// count=exact + head 조회라 행 데이터는 전송되지 않는다.
+// 지정한 기간(KST 기준, 양끝 포함)의 일별 대출 건수와 합계를 반환한다.
+// 관리자(master/book) 공통 허용. 기간은 최대 한 달(31일).
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getAnyOrError } from "@/lib/auth/admin-auth";
-import { isValidDateString, kstDayCount, kstRange } from "@/lib/kst";
+import { isValidDateString, kstDayCount } from "@/lib/kst";
+import { fetchDailyRentalCounts, MAX_RANGE_DAYS } from "@/lib/rental-stats";
 
 export const runtime = "nodejs";
-
-// 과도한 범위 조회 방지 (약 5년)
-const MAX_RANGE_DAYS = 1830;
 
 export async function GET(req: Request) {
   const adminOrErr = await getAnyOrError();
@@ -36,25 +32,22 @@ export async function GET(req: Request) {
   const days = kstDayCount(from, to);
   if (days > MAX_RANGE_DAYS) {
     return NextResponse.json(
-      { ok: false, error: "RANGE_TOO_LARGE" },
+      { ok: false, error: "RANGE_TOO_LARGE", maxDays: MAX_RANGE_DAYS },
       { status: 400 },
     );
   }
 
-  const { start, end } = kstRange(from, to);
-  const supabase = createAdminClient();
-  const { count, error } = await supabase
-    .from("rentals")
-    .select("id", { count: "exact", head: true })
-    .gte("rented_at", start)
-    .lt("rented_at", end);
-
-  if (error) {
+  try {
+    const { daily, total } = await fetchDailyRentalCounts(
+      createAdminClient(),
+      from,
+      to,
+    );
+    return NextResponse.json({ ok: true, from, to, days, count: total, daily });
+  } catch {
     return NextResponse.json(
       { ok: false, error: "QUERY_FAILED" },
       { status: 500 },
     );
   }
-
-  return NextResponse.json({ ok: true, from, to, days, count: count ?? 0 });
 }
