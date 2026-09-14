@@ -3,7 +3,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getAnyOrError } from "@/lib/auth/admin-auth";
-import { computeDueDate } from "@/lib/rental-due";
+import { resolveDueDate } from "@/lib/holidays";
 
 export const runtime = "nodejs";
 
@@ -75,7 +75,7 @@ export async function POST(
 
   // 3) rentals INSERT (trigger가 books.available_quantity 자동 감소)
   const now = new Date();
-  const dueDateIso = computeDueDate(now);
+  const dueDateIso = await resolveDueDate(supabase, now);
   const { data: rental, error: insErr } = await supabase
     .from("rentals")
     .insert({

@@ -6,7 +6,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getAnyOrError } from "@/lib/auth/admin-auth";
-import { computeDueDate } from "@/lib/rental-due";
+import { resolveDueDate } from "@/lib/holidays";
 
 export const runtime = "nodejs";
 
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
   }
 
   const now = new Date();
-  const dueDateIso = computeDueDate(now);
+  const dueDateIso = await resolveDueDate(supabase, now);
 
   const { data, error } = await supabase
     .from("rentals")
