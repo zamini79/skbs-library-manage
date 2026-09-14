@@ -44,6 +44,12 @@ const SECTIONS: SidebarSection[] = [
     title: "회원",
     items: [{ href: "/admin/members", label: "회원 목록" }],
   },
+  {
+    title: "설정",
+    items: [
+      { href: "/admin/holidays", label: "휴무일 관리", masterOnly: true },
+    ],
+  },
 ];
 
 export function Sidebar({
