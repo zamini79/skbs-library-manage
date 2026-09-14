@@ -37,8 +37,12 @@ export async function fetchHolidaysForMonth(
   year: number,
   month: number,
 ): Promise<HolidayRow[]> {
-  const key = process.env.HOLIDAY_API_KEY;
-  if (!key) throw new Error("HOLIDAY_API_KEY_NOT_CONFIGURED");
+  const raw = process.env.HOLIDAY_API_KEY;
+  if (!raw) throw new Error("HOLIDAY_API_KEY_NOT_CONFIGURED");
+  // data.go.kr 은 "Encoding"/"Decoding" 두 형태의 키를 준다.
+  // Encoding 키(%2B 등 포함)를 그대로 넣으면 URLSearchParams 가 % 를 다시 인코딩해(%252B) 403 이 난다.
+  // 퍼센트 인코딩으로 보이면 먼저 디코딩해서 어느 쪽을 넣어도 동작하게 한다.
+  const key = /%[0-9A-Fa-f]{2}/.test(raw) ? decodeURIComponent(raw) : raw;
 
   const params = new URLSearchParams({
     serviceKey: key,
@@ -53,9 +57,11 @@ export async function fetchHolidaysForMonth(
     // 해외 리전에서 data.go.kr 응답이 느린 경우가 있어 넉넉히 잡는다.
     signal: AbortSignal.timeout(25_000),
   });
-  if (!res.ok) throw new Error(`HOLIDAY_API_HTTP_${res.status}`);
-
+  // 실패 시에도 본문에 실제 사유(등록되지 않은 서비스키 등)가 들어 있으므로 먼저 읽는다.
   const text = await res.text();
+  if (!res.ok) {
+    throw new Error(`HOLIDAY_API_HTTP_${res.status}: ${text.slice(0, 200)}`);
+  }
   // 인증키 오류 등은 JSON이 아닌 XML 에러 문서로 돌아온다 — 메시지를 살려서 던진다.
   let json: unknown;
   try {
