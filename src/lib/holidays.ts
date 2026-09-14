@@ -50,7 +50,8 @@ export async function fetchHolidaysForMonth(
 
   const res = await fetch(`${API_URL}?${params}`, {
     cache: "no-store",
-    signal: AbortSignal.timeout(10_000),
+    // 해외 리전에서 data.go.kr 응답이 느린 경우가 있어 넉넉히 잡는다.
+    signal: AbortSignal.timeout(25_000),
   });
   if (!res.ok) throw new Error(`HOLIDAY_API_HTTP_${res.status}`);
 
@@ -63,12 +64,28 @@ export async function fetchHolidaysForMonth(
     throw new Error(`HOLIDAY_API_NOT_JSON: ${text.slice(0, 160)}`);
   }
 
+  // 인증키 오류 등은 정상 응답과 다른 봉투로 돌아온다:
+  //   { OpenAPI_ServiceResponse: { cmmMsgHeader: { errMsg, returnAuthMsg, returnReasonCode } } }
+  // 이 형태를 잡지 않으면 "공휴일 0건"으로 조용히 넘어가므로 반드시 예외로 올린다.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const errHeader = (json as any)?.OpenAPI_ServiceResponse?.cmmMsgHeader;
+  if (errHeader) {
+    throw new Error(
+      `HOLIDAY_API_${errHeader.returnReasonCode ?? "ERR"}: ${
+        errHeader.returnAuthMsg ?? errHeader.errMsg ?? "unknown"
+      }`,
+    );
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const body = (json as any)?.response?.body;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const header = (json as any)?.response?.header;
   if (header?.resultCode && header.resultCode !== "00") {
     throw new Error(`HOLIDAY_API_${header.resultCode}: ${header.resultMsg}`);
+  }
+  if (!body) {
+    throw new Error(`HOLIDAY_API_UNEXPECTED_SHAPE: ${text.slice(0, 160)}`);
   }
 
   // totalCount=0 이면 items 가 빈 문자열로 오는 경우가 있다.
@@ -123,10 +140,11 @@ export async function syncHolidays(
   now: Date = new Date(),
 ): Promise<SyncResult> {
   const months = targetMonths(now, monthsAhead);
-  const fetched: HolidayRow[] = [];
-  for (const { year, month } of months) {
-    fetched.push(...(await fetchHolidaysForMonth(year, month)));
-  }
+  // 순차 호출 시 해외 리전에서 지연이 누적되므로 병렬로 가져온다.
+  const perMonth = await Promise.all(
+    months.map((m) => fetchHolidaysForMonth(m.year, m.month)),
+  );
+  const fetched: HolidayRow[] = perMonth.flat();
 
   // 같은 날짜가 중복으로 올 수 있어 날짜 기준으로 정리
   const byDate = new Map(fetched.map((h) => [h.date, h]));
