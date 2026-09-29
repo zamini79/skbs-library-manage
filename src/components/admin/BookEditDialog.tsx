@@ -33,6 +33,7 @@ type FormState = {
   isbn: string;
   category: string;
   price: string;
+  total_quantity: string;
   cover_url: string;
 };
 
@@ -44,6 +45,7 @@ function fromBook(book: Book): FormState {
     isbn: book.isbn ?? "",
     category: book.category,
     price: String(book.price),
+    total_quantity: String(book.total_quantity),
     cover_url: book.cover_url ?? "",
   };
 }
@@ -96,6 +98,8 @@ function CoverPreview({ url, auto }: { url: string | null; auto: boolean }) {
 
 export function BookEditDialog({ book }: { book: Book }) {
   const router = useRouter();
+  // 대출 중 권수 — 총 수량은 이 값 미만으로 줄일 수 없다 (서버에서도 재검증).
+  const rented = book.total_quantity - book.available_quantity;
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<FormState>(() => fromBook(book));
   const [error, setError] = useState<string | null>(null);
@@ -125,6 +129,7 @@ export function BookEditDialog({ book }: { book: Book }) {
       isbn: form.isbn || null,
       category: form.category,
       price: Number(form.price),
+      total_quantity: Number(form.total_quantity),
       cover_url: form.cover_url || null,
     };
 
@@ -144,13 +149,14 @@ export function BookEditDialog({ book }: { book: Book }) {
       const data = (await res.json()) as {
         ok?: boolean;
         error?: string;
+        message?: string;
         code?: string;
       };
       if (!res.ok || !data.ok) {
         setError(
           data.code === "23505"
             ? "이미 등록된 도서와 충돌합니다 (UNIQUE 제약)"
-            : data.error || "수정 실패",
+            : data.message || data.error || "수정 실패",
         );
         return;
       }
@@ -250,6 +256,21 @@ export function BookEditDialog({ book }: { book: Book }) {
                   onChange={(e) => update("price", e.target.value)}
                   disabled={submitting}
                 />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-quantity">수량 *</Label>
+                <Input
+                  id="edit-quantity"
+                  type="number"
+                  min={Math.max(1, rented)}
+                  value={form.total_quantity}
+                  onChange={(e) => update("total_quantity", e.target.value)}
+                  disabled={submitting}
+                />
+                <p className="text-xs text-ink-muted">
+                  현재 {book.total_quantity}권 중 {rented}권 대출 중
+                  {rented > 0 && ` · ${rented}권 미만으로 줄일 수 없음`}
+                </p>
               </div>
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="edit-cover">표지 이미지 URL</Label>

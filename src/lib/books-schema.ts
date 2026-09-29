@@ -34,8 +34,8 @@ export const BookCreateSchema = z.object({
 
 export type BookCreate = z.infer<typeof BookCreateSchema>;
 
-// 도서 수정 — 메타데이터만. 수량(total_quantity)은 available_quantity 파생값과
-// 얽혀 있어 별도 관리하므로 수정 대상에서 제외.
-export const BookUpdateSchema = BookCreateSchema.omit({ total_quantity: true });
+// 도서 수정 — 메타데이터 + 총 수량. 수량 변경 시 가용 수량은 서버가 같은 차이만큼 맞춘다
+// (lib/book-inventory.ts changeBookQuantity).
+export const BookUpdateSchema = BookCreateSchema;
 
 export type BookUpdate = z.infer<typeof BookUpdateSchema>;
