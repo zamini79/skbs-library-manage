@@ -110,3 +110,68 @@ export async function fetchKakaoBookCover(opts: {
   const m = await fetchKakaoBookMetadata(opts);
   return m.cover;
 }
+
+// ── 신규 등록 폼의 제목 검색용 — 후보 목록을 그대로 돌려준다 (자동 선택 없음) ──
+
+export type BookSearchCandidate = {
+  title: string;
+  author: string;
+  publisher: string;
+  isbn: string | null;
+  price: number | null;
+  cover: string | null;
+  /** 출간일 YYYY-MM-DD (없으면 null) */
+  published: string | null;
+  source: "kakao" | "naver";
+};
+
+export async function searchKakaoBooks(
+  query: string,
+  { size = 10, timeoutMs = 5000 }: { size?: number; timeoutMs?: number } = {},
+): Promise<BookSearchCandidate[] | null> {
+  const apiKey = process.env.KAKAO_REST_API_KEY;
+  if (!apiKey || !query) return null;
+
+  const params = new URLSearchParams({ query, target: "title", size: String(size) });
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    const res = await fetch(`${KAKAO_ENDPOINT}?${params}`, {
+      signal: controller.signal,
+      headers: { Authorization: `KakaoAK ${apiKey}` },
+    });
+    clearTimeout(timer);
+    if (!res.ok) return null;
+
+    const data = (await res.json()) as {
+      documents?: Array<{
+        title?: string;
+        authors?: string[];
+        translators?: string[];
+        publisher?: string;
+        isbn?: string;
+        price?: number;
+        thumbnail?: string;
+        datetime?: string;
+      }>;
+    };
+    return (data.documents ?? [])
+      .filter((d) => d.title)
+      .map((d) => ({
+        title: d.title!.trim(),
+        author: (d.authors ?? []).join(", "),
+        publisher: d.publisher?.trim() ?? "",
+        isbn: pickIsbn13(d.isbn),
+        price: typeof d.price === "number" && d.price > 0 ? d.price : null,
+        cover: d.thumbnail
+          ? extractKakaoOriginal(
+              d.thumbnail.startsWith("//") ? `https:${d.thumbnail}` : d.thumbnail,
+            )
+          : null,
+        published: d.datetime ? d.datetime.slice(0, 10) : null,
+        source: "kakao" as const,
+      }));
+  } catch {
+    return null;
+  }
+}

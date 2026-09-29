@@ -2,6 +2,8 @@
 // API: https://developers.naver.com/docs/serviceapi/search/book/book.md
 // 한도: 25,000/일 (앱당)
 
+import type { BookSearchCandidate } from "./kakao-books";
+
 const NAVER_ENDPOINT = "https://openapi.naver.com/v1/search/book.json";
 
 export type NaverBookMetadata = {
@@ -115,4 +117,60 @@ export async function fetchNaverBookCover(opts: {
 }): Promise<string | null> {
   const m = await fetchNaverBookMetadata(opts);
   return m.cover;
+}
+
+// ── 신규 등록 폼의 제목 검색용 (Kakao 결과가 없을 때 폴백) ──
+
+export async function searchNaverBooks(
+  query: string,
+  { size = 10, timeoutMs = 5000 }: { size?: number; timeoutMs?: number } = {},
+): Promise<BookSearchCandidate[] | null> {
+  const clientId = process.env.NAVER_CLIENT_ID;
+  const clientSecret = process.env.NAVER_CLIENT_SECRET;
+  if (!clientId || !clientSecret || !query) return null;
+
+  const params = new URLSearchParams({ query, display: String(size), sort: "sim" });
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    const res = await fetch(`${NAVER_ENDPOINT}?${params}`, {
+      signal: controller.signal,
+      headers: {
+        "X-Naver-Client-Id": clientId,
+        "X-Naver-Client-Secret": clientSecret,
+      },
+    });
+    clearTimeout(timer);
+    if (!res.ok) return null;
+
+    const data = (await res.json()) as {
+      items?: Array<{
+        title?: string;
+        author?: string;
+        publisher?: string;
+        isbn?: string;
+        discount?: string;
+        image?: string;
+        pubdate?: string;
+      }>;
+    };
+    return (data.items ?? [])
+      .filter((d) => d.title)
+      .map((d) => {
+        const price = Number(d.discount);
+        const p = d.pubdate ?? "";
+        return {
+          title: stripTags(d.title!),
+          author: stripTags(d.author ?? "").split("^").join(", "),
+          publisher: stripTags(d.publisher ?? ""),
+          isbn: pickIsbn13(d.isbn),
+          price: Number.isFinite(price) && price > 0 ? price : null,
+          cover: d.image || null,
+          published: /^\d{8}$/.test(p) ? `${p.slice(0, 4)}-${p.slice(4, 6)}-${p.slice(6)}` : null,
+          source: "naver" as const,
+        };
+      });
+  } catch {
+    return null;
+  }
 }

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type KeyboardEvent } from "react";
+import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { BOOK_CATEGORIES } from "@/lib/policies";
 import { BookCreateSchema } from "@/lib/books-schema";
@@ -33,6 +34,22 @@ type FormState = {
   total_quantity: string;
   cover_url: string;
 };
+
+type SearchResult = {
+  title: string;
+  author: string;
+  publisher: string;
+  isbn: string | null;
+  price: number | null;
+  cover: string | null;
+  published: string | null;
+};
+
+type SearchState =
+  | { status: "idle" }
+  | { status: "loading" }
+  | { status: "done"; results: SearchResult[] }
+  | { status: "error"; message: string };
 
 type Duplicate = {
   id: string;
@@ -73,9 +90,55 @@ export function BookNewForm() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [dup, setDup] = useState<DuplicateState | null>(null);
+  const [search, setSearch] = useState<SearchState>({ status: "idle" });
+  /** 검색 결과에서 고른 항목 — 카테고리 입력 안내에 쓴다 */
+  const [picked, setPicked] = useState<SearchResult | null>(null);
 
   function update<K extends keyof FormState>(key: K, value: string) {
     setForm((p) => ({ ...p, [key]: value }));
+  }
+
+  // 제목으로 외부 도서 검색 (Kakao → Naver) — 결과를 고르면 저자·출판사·ISBN·단가가 채워진다.
+  async function runSearch() {
+    const q = form.title.trim();
+    if (!q) {
+      setSearch({ status: "error", message: "제목을 먼저 입력해주세요." });
+      return;
+    }
+    setSearch({ status: "loading" });
+    try {
+      const res = await fetch(`/api/admin/books/lookup?q=${encodeURIComponent(q)}`);
+      const data = (await res.json()) as { ok?: boolean; results?: SearchResult[] };
+      if (!res.ok || !data.ok) {
+        setSearch({ status: "error", message: "검색에 실패했습니다. 직접 입력해주세요." });
+        return;
+      }
+      setSearch({ status: "done", results: data.results ?? [] });
+    } catch {
+      setSearch({ status: "error", message: "네트워크 오류로 검색하지 못했습니다." });
+    }
+  }
+
+  function applyResult(r: SearchResult) {
+    setForm((p) => ({
+      ...p,
+      title: r.title,
+      author: r.author || p.author,
+      publisher: r.publisher || p.publisher,
+      isbn: r.isbn ?? p.isbn,
+      price: r.price !== null ? String(r.price) : p.price,
+    }));
+    setPicked(r);
+    setSearch({ status: "idle" });
+    setError(null);
+  }
+
+  // 제목 칸에서 Enter = 검색 (등록 제출 아님)
+  function onTitleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter" && !e.nativeEvent.isComposing) {
+      e.preventDefault();
+      void runSearch();
+    }
   }
 
   function onSubmit(e: FormEvent) {
@@ -197,13 +260,85 @@ export function BookNewForm() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2 md:col-span-2">
           <Label htmlFor="title">제목 *</Label>
-          <Input
-            id="title"
-            required
-            value={form.title}
-            onChange={(e) => update("title", e.target.value)}
-            disabled={submitting}
-          />
+          <div className="flex gap-2">
+            <Input
+              id="title"
+              required
+              value={form.title}
+              onChange={(e) => update("title", e.target.value)}
+              onKeyDown={onTitleKeyDown}
+              disabled={submitting}
+              placeholder="제목 입력 후 검색 (Enter)"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={runSearch}
+              disabled={submitting || search.status === "loading"}
+              className="shrink-0"
+            >
+              <Search className="h-4 w-4 mr-1" />
+              {search.status === "loading" ? "검색 중..." : "검색"}
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            검색 결과를 고르면 저자·출판사·ISBN·단가가 자동으로 채워집니다. 카테고리는 직접 선택해주세요.
+          </p>
+
+          {search.status === "error" && (
+            <p className="text-xs text-destructive">{search.message}</p>
+          )}
+          {search.status === "done" && (
+            <div className="border rounded-md">
+              <div className="flex items-center justify-between px-3 py-2 border-b text-xs text-muted-foreground">
+                <span>
+                  검색 결과 <span className="tabular">{search.results.length}</span>건
+                </span>
+                <button
+                  type="button"
+                  className="hover:text-foreground"
+                  onClick={() => setSearch({ status: "idle" })}
+                >
+                  닫기
+                </button>
+              </div>
+              {search.results.length === 0 ? (
+                <p className="px-3 py-4 text-sm text-muted-foreground text-center">
+                  검색 결과가 없습니다. 직접 입력해주세요.
+                </p>
+              ) : (
+                <ul className="max-h-80 overflow-y-auto divide-y">
+                  {search.results.map((r, i) => (
+                    <li key={`${r.isbn ?? r.title}-${i}`}>
+                      <button
+                        type="button"
+                        onClick={() => applyResult(r)}
+                        className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-muted/50"
+                      >
+                        <div
+                          className="w-9 shrink-0 rounded border bg-muted overflow-hidden"
+                          style={{ aspectRatio: "1 / 1.45" }}
+                        >
+                          {r.cover && (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={r.cover} alt="" className="w-full h-full object-cover" />
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="text-sm font-medium truncate">{r.title}</div>
+                          <div className="text-xs text-muted-foreground truncate">
+                            {r.author || "저자 미상"} · {r.publisher || "출판사 미상"}
+                            {r.published && ` · ${r.published.slice(0, 4)}`}
+                          </div>
+                        </div>
+                        <span className="text-xs text-primary shrink-0">선택</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
         </div>
         <div className="space-y-2">
           <Label htmlFor="author">저자 *</Label>
@@ -236,7 +371,12 @@ export function BookNewForm() {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="category">카테고리 *</Label>
+          <Label htmlFor="category">
+            카테고리 *
+            {picked && !form.category && (
+              <span className="ml-2 text-xs font-normal text-primary">← 선택해주세요</span>
+            )}
+          </Label>
           <Select
             value={form.category}
             onValueChange={(v) => update("category", v)}
@@ -288,7 +428,7 @@ export function BookNewForm() {
             placeholder="https://... (선택, 외부 URL)"
           />
           <p className="text-xs text-muted-foreground">
-            Supabase Storage 업로드 기능은 별도 작업으로 분리. 일단 외부 URL만 사용.
+            비워두면 등록 후 표지를 자동으로 찾아 채웁니다.
           </p>
         </div>
       </div>
@@ -330,6 +470,7 @@ export function BookNewForm() {
                   onClick={() => {
                     setDup(null);
                     setForm(EMPTY);
+                    setPicked(null);
                   }}
                 >
                   다른 도서 등록
