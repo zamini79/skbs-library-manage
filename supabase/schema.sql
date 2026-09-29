@@ -133,7 +133,7 @@ CREATE TABLE public.books (
   publisher             TEXT NOT NULL,
   isbn                  TEXT,
   price                 INTEGER NOT NULL DEFAULT 0,
-  category              book_category NOT NULL,
+  category              book_category,              -- NULL = 미분류
   cover_url             TEXT,                       -- 수동 업로드 (우선)
   cover_url_external    TEXT,                       -- ISBN 조회 자동 채움 (fallback)
   total_quantity        INTEGER NOT NULL DEFAULT 1,

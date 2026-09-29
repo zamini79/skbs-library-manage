@@ -54,7 +54,7 @@ export type Database = {
         Row: {
           author: string
           available_quantity: number
-          category: Database["public"]["Enums"]["book_category"]
+          category: Database["public"]["Enums"]["book_category"] | null
           cover_url: string | null
           cover_url_external: string | null
           created_at: string
@@ -74,7 +74,7 @@ export type Database = {
         Insert: {
           author: string
           available_quantity?: number
-          category: Database["public"]["Enums"]["book_category"]
+          category?: Database["public"]["Enums"]["book_category"] | null
           cover_url?: string | null
           cover_url_external?: string | null
           created_at?: string
@@ -96,7 +96,7 @@ export type Database = {
         Update: {
           author?: string
           available_quantity?: number
-          category?: Database["public"]["Enums"]["book_category"]
+          category?: Database["public"]["Enums"]["book_category"] | null
           cover_url?: string | null
           cover_url_external?: string | null
           created_at?: string

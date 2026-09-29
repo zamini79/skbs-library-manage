@@ -28,7 +28,8 @@ function normalizeAuthor(s: string | null | undefined): string {
 function sameAuthor(a: string, b: string): boolean {
   const x = normalizeAuthor(a);
   const y = normalizeAuthor(b);
-  if (!x || !y) return false;
+  // 저자 미입력(제목만 등록)이면 제목만으로 판단한다 — 비워둔 채로 중복이 새지 않게.
+  if (!x || !y) return true;
   return x === y || x.includes(y) || y.includes(x);
 }
 
@@ -40,12 +41,12 @@ export type DuplicateBook = {
   isbn: string | null;
   total_quantity: number;
   available_quantity: number;
-  /** 출판사까지 같으면 true (같은 판본), 다르면 다른 출판사 판본일 수 있음 */
+  /** 출판사까지 같으면 true (같은 판본), 다르거나 어느 한쪽이 비어 있으면 false */
   same_publisher: boolean;
 };
 
 /**
- * 제목(정규화)이 같고 대표 저자가 같은 활성 도서를 찾는다.
+ * 제목(정규화)이 같고 대표 저자가 같은(한쪽이 비어 있으면 제목만 비교) 활성 도서를 찾는다.
  * ISBN 은 기준으로 쓰지 않는다 — 자동 조회된 ISBN 이 시리즈 권차끼리 겹치는 경우가 있어
  * (예: 먼나라 이웃나라 1권·23권) 오탐이 난다.
  */
@@ -69,7 +70,7 @@ export async function findDuplicateBooks(
   const publisher = normalize(input.publisher);
   return (data ?? [])
     .filter((b) => normalize(b.title) === title && sameAuthor(b.author, input.author))
-    .map((b) => ({ ...b, same_publisher: normalize(b.publisher) === publisher }))
+    .map((b) => ({ ...b, same_publisher: !!publisher && normalize(b.publisher) === publisher }))
     .sort((a, b) => Number(b.same_publisher) - Number(a.same_publisher));
 }
 

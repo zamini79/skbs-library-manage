@@ -26,4 +26,7 @@ export const BOOK_CATEGORIES = [
 export const ADMIN_ROLES = ["master", "book"] as const;
 
 export type BookCategory = (typeof BOOK_CATEGORIES)[number];
+
+/** 카테고리를 지정하지 않은 도서(category NULL)의 표시 문구 */
+export const UNCATEGORIZED_LABEL = "미분류";
 export type AdminRole = (typeof ADMIN_ROLES)[number];

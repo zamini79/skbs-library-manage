@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Database } from "@/types/database.types";
 import { BookCover } from "./BookCover";
+import { UNCATEGORIZED_LABEL } from "@/lib/policies";
 
 type Book = Database["public"]["Tables"]["books"]["Row"];
 
@@ -31,7 +32,7 @@ export function BookCard({ book }: { book: Book }) {
 
       <div className="px-1">
         <div className="text-[10px] md:text-[11px] text-ink-muted tracking-wide">
-          {book.category}
+          {book.category ?? UNCATEGORIZED_LABEL}
         </div>
         <div className="font-serif text-[13px] md:text-[15px] font-bold text-ink leading-tight line-clamp-2 mt-1 group-hover:text-library-accent transition-colors">
           {book.title}

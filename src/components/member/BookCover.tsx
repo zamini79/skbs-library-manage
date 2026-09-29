@@ -6,6 +6,7 @@
 // palette는 책 id 해시로 5개 풀에서 선택하므로 재방문 시 같은 책은 같은 표지.
 import type { Database } from "@/types/database.types";
 import { cn } from "@/lib/utils";
+import { UNCATEGORIZED_LABEL } from "@/lib/policies";
 
 type Book = Database["public"]["Tables"]["books"]["Row"];
 
@@ -118,7 +119,7 @@ export function BookCover({
               textTransform: "uppercase",
             }}
           >
-            {book.category}
+            {book.category ?? UNCATEGORIZED_LABEL}
           </div>
         </div>
         <div
@@ -229,7 +230,7 @@ export function BookCover({
               opacity: 0.6,
             }}
           >
-            {book.category}
+            {book.category ?? UNCATEGORIZED_LABEL}
           </div>
         </div>
         <div style={{ marginTop: "auto", padding: "0 10% 10%", position: "relative" }}>
@@ -263,7 +264,7 @@ export function BookCover({
             textTransform: "uppercase",
           }}
         >
-          {book.category}
+          {book.category ?? UNCATEGORIZED_LABEL}
         </div>
         <div
           style={{

@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { BookEditDialog } from "@/components/admin/BookEditDialog";
+import { UNCATEGORIZED_LABEL } from "@/lib/policies";
 import {
   Dialog,
   DialogContent,
@@ -109,7 +110,7 @@ export function BooksTable({
         case "publisher":
           return b.publisher;
         case "category":
-          return b.category;
+          return b.category ?? "";
         case "status":
           return statusKey(b);
         case "quantity":
@@ -342,7 +343,7 @@ export function BooksTable({
                     <TableCell className="text-xs text-muted-foreground">
                       {book.publisher}
                     </TableCell>
-                    <TableCell className="text-xs">{book.category}</TableCell>
+                    <TableCell className="text-xs">{book.category ?? UNCATEGORIZED_LABEL}</TableCell>
                     <TableCell className="text-right font-mono tabular">
                       {book.total_quantity}
                     </TableCell>

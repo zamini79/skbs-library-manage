@@ -3,7 +3,7 @@
 import { useState, type FormEvent, type KeyboardEvent } from "react";
 import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { BOOK_CATEGORIES } from "@/lib/policies";
+import { BOOK_CATEGORIES, UNCATEGORIZED_LABEL } from "@/lib/policies";
 import { BookCreateSchema } from "@/lib/books-schema";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,6 +34,9 @@ type FormState = {
   total_quantity: string;
   cover_url: string;
 };
+
+/** Radix Select 는 빈 문자열 값을 못 써서 '미분류' 선택지를 이 값으로 표현한다 */
+const NO_CATEGORY = "__none__";
 
 type SearchResult = {
   title: string;
@@ -91,8 +94,6 @@ export function BookNewForm() {
   const [submitting, setSubmitting] = useState(false);
   const [dup, setDup] = useState<DuplicateState | null>(null);
   const [search, setSearch] = useState<SearchState>({ status: "idle" });
-  /** 검색 결과에서 고른 항목 — 카테고리 입력 안내에 쓴다 */
-  const [picked, setPicked] = useState<SearchResult | null>(null);
 
   function update<K extends keyof FormState>(key: K, value: string) {
     setForm((p) => ({ ...p, [key]: value }));
@@ -128,7 +129,6 @@ export function BookNewForm() {
       isbn: r.isbn ?? p.isbn,
       price: r.price !== null ? String(r.price) : p.price,
     }));
-    setPicked(r);
     setSearch({ status: "idle" });
     setError(null);
   }
@@ -282,7 +282,7 @@ export function BookNewForm() {
             </Button>
           </div>
           <p className="text-xs text-muted-foreground">
-            검색 결과를 고르면 저자·출판사·ISBN·단가가 자동으로 채워집니다. 카테고리는 직접 선택해주세요.
+            검색 결과를 고르면 저자·출판사·ISBN·단가가 자동으로 채워집니다. 제목 외 항목은 비워둬도 됩니다.
           </p>
 
           {search.status === "error" && (
@@ -341,20 +341,18 @@ export function BookNewForm() {
           )}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="author">저자 *</Label>
+          <Label htmlFor="author">저자</Label>
           <Input
             id="author"
-            required
             value={form.author}
             onChange={(e) => update("author", e.target.value)}
             disabled={submitting}
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="publisher">출판사 *</Label>
+          <Label htmlFor="publisher">출판사</Label>
           <Input
             id="publisher"
-            required
             value={form.publisher}
             onChange={(e) => update("publisher", e.target.value)}
             disabled={submitting}
@@ -371,21 +369,17 @@ export function BookNewForm() {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="category">
-            카테고리 *
-            {picked && !form.category && (
-              <span className="ml-2 text-xs font-normal text-primary">← 선택해주세요</span>
-            )}
-          </Label>
+          <Label htmlFor="category">카테고리</Label>
           <Select
-            value={form.category}
-            onValueChange={(v) => update("category", v)}
+            value={form.category || NO_CATEGORY}
+            onValueChange={(v) => update("category", v === NO_CATEGORY ? "" : v)}
             disabled={submitting}
           >
             <SelectTrigger id="category">
-              <SelectValue placeholder="선택" />
+              <SelectValue />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value={NO_CATEGORY}>{UNCATEGORIZED_LABEL} (선택 안 함)</SelectItem>
               {BOOK_CATEGORIES.map((c) => (
                 <SelectItem key={c} value={c}>
                   {c}
@@ -470,7 +464,6 @@ export function BookNewForm() {
                   onClick={() => {
                     setDup(null);
                     setForm(EMPTY);
-                    setPicked(null);
                   }}
                 >
                   다른 도서 등록

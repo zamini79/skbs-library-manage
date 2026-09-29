@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { UNCATEGORIZED_LABEL } from "@/lib/policies";
 
 export type PendingRequest = {
   id: string;
@@ -119,7 +120,7 @@ export function PendingRequestsList({
           >
             <div className="space-y-0.5">
               <div className="text-xs text-muted-foreground uppercase tracking-wider">
-                {r.book.category}
+                {r.book.category ?? UNCATEGORIZED_LABEL}
               </div>
               <div className="font-medium">{r.book.title}</div>
               <div className="text-xs text-muted-foreground">

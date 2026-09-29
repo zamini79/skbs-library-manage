@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { BookCover } from "@/components/member/BookCover";
 import { RequestBookButton } from "@/components/member/RequestBookButton";
 import { cn } from "@/lib/utils";
+import { UNCATEGORIZED_LABEL } from "@/lib/policies";
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -111,7 +112,7 @@ export default async function BookDetailPage({
           <div className="space-y-6">
             <div className="space-y-2">
               <div className="text-xs text-ink-muted tracking-overline uppercase">
-                {book.category}
+                {book.category ?? UNCATEGORIZED_LABEL}
               </div>
               <h1 className="font-serif text-4xl font-bold tracking-tight text-ink leading-tight">
                 {book.title}
@@ -186,7 +187,7 @@ export default async function BookDetailPage({
           </div>
           <div className="space-y-1.5 px-2">
             <div className="text-[11px] text-library-accent tracking-overline uppercase font-bold">
-              {book.category}
+              {book.category ?? UNCATEGORIZED_LABEL}
             </div>
             <h1 className="font-serif text-[24px] font-bold tracking-tight text-ink leading-[1.05] [text-wrap:balance] max-w-[280px] mx-auto">
               {book.title}

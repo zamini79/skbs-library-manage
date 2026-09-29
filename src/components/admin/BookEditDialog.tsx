@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import type { Database } from "@/types/database.types";
-import { BOOK_CATEGORIES } from "@/lib/policies";
+import { BOOK_CATEGORIES, UNCATEGORIZED_LABEL } from "@/lib/policies";
 import { BookUpdateSchema } from "@/lib/books-schema";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,6 +26,9 @@ import {
 
 type Book = Database["public"]["Tables"]["books"]["Row"];
 
+/** Radix Select 는 빈 문자열 값을 못 써서 '미분류' 선택지를 이 값으로 표현한다 */
+const NO_CATEGORY = "__none__";
+
 type FormState = {
   title: string;
   author: string;
@@ -43,7 +46,7 @@ function fromBook(book: Book): FormState {
     author: book.author,
     publisher: book.publisher,
     isbn: book.isbn ?? "",
-    category: book.category,
+    category: book.category ?? "",
     price: String(book.price),
     total_quantity: String(book.total_quantity),
     cover_url: book.cover_url ?? "",
@@ -197,20 +200,18 @@ export function BookEditDialog({ book }: { book: Book }) {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-author">저자 *</Label>
+                <Label htmlFor="edit-author">저자</Label>
                 <Input
                   id="edit-author"
-                  required
                   value={form.author}
                   onChange={(e) => update("author", e.target.value)}
                   disabled={submitting}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-publisher">출판사 *</Label>
+                <Label htmlFor="edit-publisher">출판사</Label>
                 <Input
                   id="edit-publisher"
-                  required
                   value={form.publisher}
                   onChange={(e) => update("publisher", e.target.value)}
                   disabled={submitting}
@@ -227,16 +228,17 @@ export function BookEditDialog({ book }: { book: Book }) {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-category">카테고리 *</Label>
+                <Label htmlFor="edit-category">카테고리</Label>
                 <Select
-                  value={form.category}
-                  onValueChange={(v) => update("category", v)}
+                  value={form.category || NO_CATEGORY}
+                  onValueChange={(v) => update("category", v === NO_CATEGORY ? "" : v)}
                   disabled={submitting}
                 >
                   <SelectTrigger id="edit-category">
-                    <SelectValue placeholder="선택" />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value={NO_CATEGORY}>{UNCATEGORIZED_LABEL} (선택 안 함)</SelectItem>
                     {BOOK_CATEGORIES.map((c) => (
                       <SelectItem key={c} value={c}>
                         {c}

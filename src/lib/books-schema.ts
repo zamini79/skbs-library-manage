@@ -9,8 +9,10 @@ const CATEGORY_TUPLE = BOOK_CATEGORIES as readonly string[] as [
 
 export const BookCreateSchema = z.object({
   title: z.string().trim().min(1, "제목 필수").max(500),
-  author: z.string().trim().min(1, "저자 필수").max(200),
-  publisher: z.string().trim().min(1, "출판사 필수").max(200),
+  // 저자·출판사·카테고리는 선택 입력 (제목 검색으로 채우거나 비워둘 수 있음).
+  // 저자·출판사는 DB NOT NULL 이라 미입력 시 빈 문자열, 카테고리는 NULL(미분류).
+  author: z.string().trim().max(200).optional().default(""),
+  publisher: z.string().trim().max(200).optional().default(""),
   isbn: z
     .string()
     .trim()
@@ -18,7 +20,12 @@ export const BookCreateSchema = z.object({
     .optional()
     .nullable()
     .transform((v) => (v ? v : null)),
-  category: z.enum(CATEGORY_TUPLE),
+  category: z
+    .enum(CATEGORY_TUPLE)
+    .nullable()
+    .optional()
+    .or(z.literal("").transform(() => null))
+    .transform((v) => v ?? null),
   price: z.number().int("정수").min(0, "0 이상"),
   total_quantity: z.number().int("정수").min(1, "1 이상"),
   cover_url: z

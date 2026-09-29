@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { UNCATEGORIZED_LABEL } from "@/lib/policies";
 
 type Book = {
   id: string;
@@ -197,7 +198,7 @@ export function RentalNewForm() {
         {selectedBook ? (
           <div className="bg-card border rounded-md p-4 space-y-1">
             <div className="text-xs text-muted-foreground uppercase tracking-wider">
-              {selectedBook.category}
+              {selectedBook.category ?? UNCATEGORIZED_LABEL}
             </div>
             <div className="font-medium">{selectedBook.title}</div>
             <div className="text-xs text-muted-foreground">
